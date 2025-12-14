@@ -1,0 +1,15 @@
+name = "sistema-cirurgias-v9-2"
+main = "index.html"
+compatibility_date = "2024-12-14"
+workers_dev = true
+
+[site]
+bucket = "./"
+
+# Arquivos a incluir
+[build]
+command = ""
+
+# Variáveis de ambiente (se necessário)
+[vars]
+ENVIRONMENT = "production"

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Completo do Sistema de Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-xl p-8 max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-6 text-purple-900">
+                <i class="fas fa-vial mr-3"></i>Teste Completo do Sistema de Login
+            </h1>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Test Panel -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-flask mr-2"></i>Painel de Testes
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <button id="testConnection" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-plug mr-2"></i>1. Testar Conexão com API
+                        </button>
+                        
+                        <button id="testStudents" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                            <i class="fas fa-users mr-2"></i>2. Verificar Alunos Cadastrados
+                        </button>
+                        
+                        <button id="testLoginFlow" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i>3. Simular Fluxo de Login
+                        </button>
+                        
+                        <button id="testHashFunction" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-700 transition">
+                            <i class="fas fa-key mr-2"></i>4. Testar Função de Hash
+                        </button>
+                        
+                        <button id="clearAll" class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700 transition">
+                            <i class="fas fa-trash-alt mr-2"></i>Limpar Todos os Logs
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Results Panel -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-gray-800">
+                        <i class="fas fa-terminal mr-2"></i>Resultados
+                    </h2>
+                    <div id="results" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm max-h-96 overflow-y-auto">
+                        <div class="text-gray-500">Aguardando testes...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student List -->
+            <div class="mt-6 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-list-ul mr-2"></i>Lista de Perfusionistas
+                </h2>
+                <div id="studentList" class="overflow-x-auto"></div>
+            </div>
+            
+            <!-- Quick Login Test -->
+            <div class="mt-6 bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg shadow-md border-2 border-purple-300">
+                <h2 class="text-xl font-bold mb-4 text-purple-900">
+                    <i class="fas fa-rocket mr-2"></i>Teste Rápido de Login
+                </h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Matrícula:</label>
+                        <input type="text" id="quickRegistration" class="w-full p-3 border-2 border-purple-300 rounded-lg" placeholder="Ex: 20241001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Senha:</label>
+                        <input type="password" id="quickPassword" class="w-full p-3 border-2 border-purple-300 rounded-lg" placeholder="Digite a senha">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="quickLogin" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Testar Login
+                        </button>
+                    </div>
+                </div>
+                <div id="quickResult" class="mt-4 hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            let color = 'text-green-400';
+            let icon = '✓';
+            
+            if (type === 'error') {
+                color = 'text-red-400';
+                icon = '✗';
+            } else if (type === 'warning') {
+                color = 'text-yellow-400';
+                icon = '⚠';
+            } else if (type === 'info') {
+                color = 'text-blue-400';
+                icon = 'ℹ';
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `${color} mb-1`;
+            logEntry.innerHTML = `[${timestamp}] ${icon} ${message}`;
+            resultsDiv.appendChild(logEntry);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function simpleHash(str) {
+            if (!str) return '';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+        
+        // Test 1: Connection
+        document.getElementById('testConnection').addEventListener('click', async () => {
+            log('Iniciando teste de conexão...', 'info');
+            try {
+                const response = await fetch('tables/students?limit=1');
+                if (response.ok) {
+                    log('✓ Conexão com API bem-sucedida!', 'info');
+                    log(`Status: ${response.status} ${response.statusText}`, 'info');
+                } else {
+                    log(`✗ Erro na conexão: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`✗ Erro: ${error.message}`, 'error');
+            }
+        });
+        
+        // Test 2: Students
+        document.getElementById('testStudents').addEventListener('click', async () => {
+            log('Buscando perfusionistas cadastrados...', 'info');
+            try {
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data || [];
+                
+                log(`✓ Total de perfusionistas: ${students.length}`, 'info');
+                
+                if (students.length === 0) {
+                    log('⚠ Nenhum perfusionista cadastrado!', 'warning');
+                    log('Execute "cadastrar-alunos.html" primeiro', 'warning');
+                } else {
+                    log('--- Lista de Perfusionistas ---', 'info');
+                    students.forEach((student, index) => {
+                        const status = student.active ? '✓ Ativo' : '✗ Inativo';
+                        const firstLogin = student.first_login ? '🔔 Primeiro Login' : '✓ Senha Alterada';
+                        log(`${index + 1}. ${student.name} (${student.registration}) - ${student.class_period} - ${status} - ${firstLogin}`, 'info');
+                    });
+                    
+                    // Display in table
+                    displayStudentTable(students);
+                }
+            } catch (error) {
+                log(`✗ Erro ao buscar perfusionistas: ${error.message}`, 'error');
+            }
+        });
+        
+        // Test 3: Login Flow
+        document.getElementById('testLoginFlow').addEventListener('click', async () => {
+            log('Simulando fluxo de login completo...', 'info');
+            
+            try {
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data || [];
+                
+                if (students.length === 0) {
+                    log('⚠ Nenhum perfusionista para testar', 'warning');
+                    return;
+                }
+                
+                const testStudent = students[0];
+                log(`Testando com: ${testStudent.name} (${testStudent.registration})`, 'info');
+                
+                // Test hash
+                const password = testStudent.registration;
+                const hashedPassword = simpleHash(password);
+                log(`Hash da senha: ${hashedPassword}`, 'info');
+                
+                // Compare
+                if (testStudent.password === hashedPassword || !testStudent.password) {
+                    log('✓ Validação de senha OK', 'info');
+                } else {
+                    log('⚠ Hash não corresponde', 'warning');
+                }
+                
+                // Check active
+                if (testStudent.active) {
+                    log('✓ Perfusionista está ativo', 'info');
+                } else {
+                    log('✗ Perfusionista está inativo', 'error');
+                }
+                
+                // Check first login
+                if (testStudent.first_login) {
+                    log('🔔 Primeiro login detectado - modal seria exibido', 'info');
+                } else {
+                    log('✓ Não é primeiro login', 'info');
+                }
+                
+                log('✓ Fluxo de login simulado com sucesso!', 'info');
+                
+            } catch (error) {
+                log(`✗ Erro no teste: ${error.message}`, 'error');
+            }
+        });
+        
+        // Test 4: Hash Function
+        document.getElementById('testHashFunction').addEventListener('click', () => {
+            log('Testando função de hash...', 'info');
+            const testCases = [
+                '20241001',
+                '20241002',
+                '20242001',
+                'senha123',
+                'Perfusao2024'
+            ];
+            
+            testCases.forEach(test => {
+                const hash = simpleHash(test);
+                log(`Hash de "${test}": ${hash}`, 'info');
+            });
+            
+            log('✓ Testes de hash concluídos', 'info');
+        });
+        
+        // Clear logs
+        document.getElementById('clearAll').addEventListener('click', () => {
+            resultsDiv.innerHTML = '<div class="text-gray-500">Logs limpos...</div>';
+        });
+        
+        // Quick Login Test
+        document.getElementById('quickLogin').addEventListener('click', async () => {
+            const registration = document.getElementById('quickRegistration').value.trim();
+            const password = document.getElementById('quickPassword').value;
+            const resultDiv = document.getElementById('quickResult');
+            
+            if (!registration || !password) {
+                resultDiv.className = 'mt-4 p-4 bg-red-100 border-2 border-red-400 rounded-lg';
+                resultDiv.innerHTML = '<p class="text-red-800"><i class="fas fa-times-circle mr-2"></i>Preencha matrícula e senha</p>';
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+            
+            log(`Tentando login: ${registration}`, 'info');
+            
+            try {
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data || [];
+                
+                const student = students.find(s => s.registration === registration);
+                
+                if (!student) {
+                    log('✗ Matrícula não encontrada', 'error');
+                    resultDiv.className = 'mt-4 p-4 bg-red-100 border-2 border-red-400 rounded-lg';
+                    resultDiv.innerHTML = '<p class="text-red-800"><i class="fas fa-times-circle mr-2"></i>Matrícula não encontrada</p>';
+                    resultDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                const inputHash = simpleHash(password);
+                const storedHash = student.password || simpleHash(registration);
+                
+                if (inputHash === storedHash) {
+                    log('✓ Login bem-sucedido!', 'info');
+                    resultDiv.className = 'mt-4 p-4 bg-green-100 border-2 border-green-400 rounded-lg';
+                    resultDiv.innerHTML = `
+                        <p class="text-green-800 font-bold mb-2"><i class="fas fa-check-circle mr-2"></i>Login Bem-Sucedido!</p>
+                        <p class="text-sm text-green-700">Nome: ${student.name}</p>
+                        <p class="text-sm text-green-700">Turma: ${student.class_period}</p>
+                        <p class="text-sm text-green-700">Status: ${student.active ? 'Ativo' : 'Inativo'}</p>
+                        <p class="text-sm text-green-700">Primeiro Login: ${student.first_login ? 'Sim (precisa mudar senha)' : 'Não'}</p>
+                    `;
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    log('✗ Senha incorreta', 'error');
+                    resultDiv.className = 'mt-4 p-4 bg-red-100 border-2 border-red-400 rounded-lg';
+                    resultDiv.innerHTML = '<p class="text-red-800"><i class="fas fa-times-circle mr-2"></i>Senha incorreta</p>';
+                    resultDiv.classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                log(`✗ Erro: ${error.message}`, 'error');
+                resultDiv.className = 'mt-4 p-4 bg-red-100 border-2 border-red-400 rounded-lg';
+                resultDiv.innerHTML = `<p class="text-red-800"><i class="fas fa-times-circle mr-2"></i>Erro: ${error.message}</p>`;
+                resultDiv.classList.remove('hidden');
+            }
+        });
+        
+        function displayStudentTable(students) {
+            const tableDiv = document.getElementById('studentList');
+            if (students.length === 0) {
+                tableDiv.innerHTML = '<p class="text-gray-500">Nenhum perfusionista cadastrado</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 text-left">#</th>
+                            <th class="p-2 text-left">Nome</th>
+                            <th class="p-2 text-left">Matrícula</th>
+                            <th class="p-2 text-left">Turma</th>
+                            <th class="p-2 text-center">Status</th>
+                            <th class="p-2 text-center">1º Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            students.forEach((student, index) => {
+                const activeClass = student.active ? 'text-green-600' : 'text-red-600';
+                const activeIcon = student.active ? 'fa-check-circle' : 'fa-times-circle';
+                const firstLoginClass = student.first_login ? 'text-yellow-600' : 'text-green-600';
+                const firstLoginIcon = student.first_login ? 'fa-exclamation-circle' : 'fa-check';
+                
+                html += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2">${index + 1}</td>
+                        <td class="p-2 font-semibold">${student.name}</td>
+                        <td class="p-2"><code>${student.registration}</code></td>
+                        <td class="p-2">${student.class_period}</td>
+                        <td class="p-2 text-center ${activeClass}"><i class="fas ${activeIcon}"></i></td>
+                        <td class="p-2 text-center ${firstLoginClass}"><i class="fas ${firstLoginIcon}"></i></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            tableDiv.innerHTML = html;
+        }
+        
+        log('Sistema de testes carregado', 'info');
+        log('Clique nos botões para executar os testes', 'info');
+    </script>
+</body>
+</html>

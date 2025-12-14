@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Inicial - Sistema CEC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-rocket text-blue-600 mr-3"></i>
+                Setup Inicial do Sistema
+            </h1>
+            <p class="text-gray-600">Configure o sistema do zero - Passo a passo</p>
+        </div>
+
+        <!-- Step 1: Create Coordinator -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                <span class="bg-blue-600 text-white w-10 h-10 rounded-full inline-flex items-center justify-center mr-3">1</span>
+                Criar Coordenador
+            </h2>
+            
+            <form id="coordForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nome do Coordenador</label>
+                    <input type="text" id="coordName" value="Dr. João Silva" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">E-mail</label>
+                    <input type="email" id="coordEmail" value="coordenador@sistema.com" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Senha</label>
+                    <input type="password" id="coordPassword" value="admin123" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">
+                    <i class="fas fa-user-plus mr-2"></i>Criar Coordenador
+                </button>
+            </form>
+            <div id="coord-result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Step 2: Create Class -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                <span class="bg-green-600 text-white w-10 h-10 rounded-full inline-flex items-center justify-center mr-3">2</span>
+                Criar Turma
+            </h2>
+            
+            <form id="classForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Nome da Turma</label>
+                        <input type="text" id="className" value="Turma A 2024" required
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Código</label>
+                        <input type="text" id="classCode" value="2024-A" required
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Ano</label>
+                        <input type="number" id="classYear" value="2024" required
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Período</label>
+                        <select id="classPeriod" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                            <option value="Matutino">Matutino</option>
+                            <option value="Vespertino">Vespertino</option>
+                            <option value="Noturno">Noturno</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
+                    <i class="fas fa-chalkboard mr-2"></i>Criar Turma
+                </button>
+            </form>
+            <div id="class-result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Step 3: Create Student -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                <span class="bg-purple-600 text-white w-10 h-10 rounded-full inline-flex items-center justify-center mr-3">3</span>
+                Criar Aluno
+            </h2>
+            
+            <form id="studentForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nome do Aluno</label>
+                    <input type="text" id="studentName" value="Maria Silva" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">E-mail</label>
+                    <input type="email" id="studentEmail" value="maria@aluno.com" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Turma (ID - copie do resultado acima)</label>
+                    <input type="text" id="studentClassId" placeholder="Cole o ID da turma aqui" required
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700">
+                    <i class="fas fa-user-graduate mr-2"></i>Criar Aluno
+                </button>
+            </form>
+            <div id="student-result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Step 4: Test Login -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                <span class="bg-orange-600 text-white w-10 h-10 rounded-full inline-flex items-center justify-center mr-3">4</span>
+                Testar Login
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <p class="font-bold text-blue-800 mb-2">Login Coordenador:</p>
+                    <p class="text-sm text-blue-700">E-mail: <code class="bg-blue-100 px-2 py-1 rounded">coordenador@sistema.com</code></p>
+                    <p class="text-sm text-blue-700">Senha: <code class="bg-blue-100 px-2 py-1 rounded">admin123</code></p>
+                    <a href="admin-login.html" class="inline-block mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                        Ir para Login Admin
+                    </a>
+                </div>
+                
+                <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+                    <p class="font-bold text-purple-800 mb-2">Login Aluno:</p>
+                    <p class="text-sm text-purple-700">Matrícula: <code id="studentRegDisplay" class="bg-purple-100 px-2 py-1 rounded">Crie o aluno primeiro</code></p>
+                    <p class="text-sm text-purple-700">Senha: <code id="studentPassDisplay" class="bg-purple-100 px-2 py-1 rounded">Mesma matrícula</code></p>
+                    <a href="login.html" class="inline-block mt-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
+                        Ir para Login Aluno
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/api-config.js"></script>
+    <script>
+        // Simple hash function
+        function simpleHash(str) {
+            if (!str) return '';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
+        // Generate registration number
+        function generateRegistration() {
+            const year = new Date().getFullYear();
+            const random = Math.floor(1000 + Math.random() * 9000);
+            return `${year}${random}`;
+        }
+
+        // Show result
+        function showResult(elementId, success, message, data = null) {
+            const el = document.getElementById(elementId);
+            el.className = success ? 
+                'p-4 bg-green-100 border-2 border-green-400 rounded-lg' : 
+                'p-4 bg-red-100 border-2 border-red-400 rounded-lg';
+            el.innerHTML = `
+                <p class="font-bold ${success ? 'text-green-800' : 'text-red-800'} mb-2">
+                    <i class="fas fa-${success ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    ${message}
+                </p>
+                ${data ? `<pre class="text-sm bg-white p-2 rounded mt-2 overflow-auto">${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            el.classList.remove('hidden');
+        }
+
+        // Create Coordinator
+        document.getElementById('coordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const coordData = {
+                name: document.getElementById('coordName').value,
+                email: document.getElementById('coordEmail').value,
+                password: simpleHash(document.getElementById('coordPassword').value),
+                role: 'coordinator',
+                active: true
+            };
+
+            try {
+                const response = await fetch('tables/admins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(coordData)
+                });
+
+                if (!response.ok) throw new Error('Erro ao criar coordenador');
+                
+                const result = await response.json();
+                showResult('coord-result', true, 'Coordenador criado com sucesso!', result);
+            } catch (error) {
+                showResult('coord-result', false, 'Erro: ' + error.message);
+            }
+        });
+
+        // Create Class
+        document.getElementById('classForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const classData = {
+                name: document.getElementById('className').value,
+                code: document.getElementById('classCode').value,
+                year: parseInt(document.getElementById('classYear').value),
+                semester: 1,
+                period: document.getElementById('classPeriod').value,
+                course: 'Perfusão Cardiovascular',
+                active: true,
+                total_students: 0
+            };
+
+            try {
+                const response = await fetch('tables/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(classData)
+                });
+
+                if (!response.ok) throw new Error('Erro ao criar turma');
+                
+                const result = await response.json();
+                showResult('class-result', true, 'Turma criada! COPIE O ID ABAIXO:', result);
+                
+                // Auto-fill class ID in student form
+                document.getElementById('studentClassId').value = result.id;
+            } catch (error) {
+                showResult('class-result', false, 'Erro: ' + error.message);
+            }
+        });
+
+        // Create Student
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const registration = generateRegistration();
+            const studentData = {
+                name: document.getElementById('studentName').value,
+                email: document.getElementById('studentEmail').value,
+                registration: registration,
+                password: simpleHash(registration),
+                class_id: document.getElementById('studentClassId').value,
+                class_period: document.getElementById('classPeriod').value,
+                course: 'Perfusão Cardiovascular',
+                active: true,
+                first_login: true
+            };
+
+            try {
+                const response = await fetch('tables/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+
+                if (!response.ok) throw new Error('Erro ao criar aluno');
+                
+                const result = await response.json();
+                showResult('student-result', true, 
+                    `Aluno criado! Matrícula: ${registration} | Senha: ${registration}`, 
+                    result
+                );
+                
+                // Show in test section
+                document.getElementById('studentRegDisplay').textContent = registration;
+                document.getElementById('studentPassDisplay').textContent = registration;
+                
+            } catch (error) {
+                showResult('student-result', false, 'Erro: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

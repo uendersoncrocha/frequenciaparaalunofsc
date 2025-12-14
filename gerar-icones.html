@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Ícones do PWA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-xl p-8 max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-center mb-6 text-purple-900">
+                <i class="fas fa-images mr-3"></i>Gerador de Ícones PWA
+            </h1>
+            
+            <div class="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                <p class="text-blue-900">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Esta ferramenta gera todos os ícones necessários para o PWA</strong>
+                </p>
+                <p class="text-sm text-blue-800 mt-2">
+                    Serão gerados 8 tamanhos: 72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512
+                </p>
+            </div>
+
+            <div class="text-center mb-6">
+                <button id="generateBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition">
+                    <i class="fas fa-magic mr-2"></i>GERAR TODOS OS ÍCONES
+                </button>
+            </div>
+
+            <div id="progressArea" class="hidden">
+                <div class="mb-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Progresso</span>
+                        <span id="progressText" class="text-sm font-semibold text-purple-700">0/8</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="iconsGrid"></div>
+
+                <div id="summaryArea" class="hidden mt-6 p-6 bg-green-50 border-2 border-green-300 rounded-lg">
+                    <h3 class="text-xl font-bold text-green-900 mb-3">
+                        <i class="fas fa-check-circle mr-2"></i>Ícones Gerados com Sucesso!
+                    </h3>
+                    <p class="text-green-800">
+                        Clique com botão direito em cada ícone e selecione "Salvar imagem como..." para baixar.
+                    </p>
+                    <p class="text-sm text-green-700 mt-2">
+                        <strong>Salve os ícones na pasta <code>/icons/</code> do projeto com os nomes exatos mostrados abaixo de cada ícone.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        const svgIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bgGradient)"/>
+  <g transform="translate(256, 256)">
+    <path d="M0,-60 C-30,-90 -80,-90 -80,-50 C-80,-20 -40,20 0,60 C40,20 80,-20 80,-50 C80,-90 30,-90 0,-60 Z" 
+          fill="url(#iconGradient)" 
+          stroke="white" 
+          stroke-width="8"/>
+    <g transform="translate(0, 10)">
+      <polyline points="-120,0 -80,0 -60,-40 -40,40 -20,-30 0,0 20,0 40,-50 60,30 80,-20 100,0 120,0" 
+                fill="none" 
+                stroke="#ff6b6b" 
+                stroke-width="8" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"
+                opacity="0.9"/>
+    </g>
+    <g transform="translate(-60, -60) scale(0.4)">
+      <rect x="-15" y="-45" width="30" height="90" fill="white" rx="5"/>
+      <rect x="-45" y="-15" width="90" height="30" fill="white" rx="5"/>
+    </g>
+  </g>
+  <text x="256" y="460" 
+        font-family="Arial, sans-serif" 
+        font-size="48" 
+        font-weight="bold" 
+        fill="white" 
+        text-anchor="middle"
+        opacity="0.9">
+    CEC
+  </text>
+</svg>
+        `;
+
+        function generateIcon(size) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                const img = new Image();
+                const svgBlob = new Blob([svgIcon], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(svgBlob);
+
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, size, size);
+                    URL.revokeObjectURL(url);
+                    
+                    canvas.toBlob((blob) => {
+                        const pngUrl = URL.createObjectURL(blob);
+                        resolve({ size, url: pngUrl });
+                    }, 'image/png');
+                };
+
+                img.src = url;
+            });
+        }
+
+        async function generateAllIcons() {
+            const generateBtn = document.getElementById('generateBtn');
+            const progressArea = document.getElementById('progressArea');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const iconsGrid = document.getElementById('iconsGrid');
+            const summaryArea = document.getElementById('summaryArea');
+
+            // Desabilitar botão
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>GERANDO...';
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Mostrar área de progresso
+            progressArea.classList.remove('hidden');
+            iconsGrid.innerHTML = '';
+
+            for (let i = 0; i < sizes.length; i++) {
+                const size = sizes[i];
+                const { url } = await generateIcon(size);
+
+                // Criar card do ícone
+                const iconCard = document.createElement('div');
+                iconCard.className = 'bg-white p-4 rounded-lg shadow-md text-center';
+                iconCard.innerHTML = `
+                    <img src="${url}" alt="Icon ${size}x${size}" class="mx-auto mb-2" style="width: ${Math.min(size, 128)}px; height: ${Math.min(size, 128)}px;">
+                    <p class="text-sm font-semibold text-gray-700">${size}x${size}</p>
+                    <p class="text-xs text-gray-500">icon-${size}x${size}.png</p>
+                    <a href="${url}" download="icon-${size}x${size}.png" class="mt-2 inline-block bg-purple-600 text-white px-3 py-1 rounded text-xs hover:bg-purple-700">
+                        <i class="fas fa-download mr-1"></i>Baixar
+                    </a>
+                `;
+                iconsGrid.appendChild(iconCard);
+
+                // Atualizar progresso
+                const progress = ((i + 1) / sizes.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${i + 1}/${sizes.length}`;
+            }
+
+            // Mostrar resumo
+            summaryArea.classList.remove('hidden');
+
+            // Reabilitar botão
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>ÍCONES GERADOS';
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            generateBtn.classList.add('bg-green-600');
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', generateAllIcons);
+
+        console.log('✅ Gerador de ícones PWA carregado');
+    </script>
+</body>
+</html>

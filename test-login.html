@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Login - Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .test-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .log {
+            font-family: monospace;
+            font-size: 12px;
+            padding: 0.5rem;
+            border-left: 3px solid #667eea;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+        }
+        .success { border-left-color: #38ef7d; background: #f0fff4; }
+        .error { border-left-color: #f5576c; background: #fff5f5; }
+        .warning { border-left-color: #ffa500; background: #fffaf0; }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-white mb-6">
+            <i class="fas fa-bug mr-2"></i>Teste de Login - Diagnóstico
+        </h1>
+
+        <!-- Test 1: API Connection -->
+        <div class="test-card">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-network-wired mr-2"></i>1. Teste de Conexão API
+            </h2>
+            <button onclick="testAPIConnection()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                <i class="fas fa-play mr-2"></i>Testar Conexão
+            </button>
+            <div id="apiLog" class="mt-4"></div>
+        </div>
+
+        <!-- Test 2: Fetch Students -->
+        <div class="test-card">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-users mr-2"></i>2. Buscar Alunos
+            </h2>
+            <button onclick="testFetchStudents()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">
+                <i class="fas fa-play mr-2"></i>Buscar Alunos
+            </button>
+            <div id="studentsLog" class="mt-4"></div>
+        </div>
+
+        <!-- Test 3: Test Login -->
+        <div class="test-card">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-sign-in-alt mr-2"></i>3. Testar Login
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <input type="text" id="testReg" placeholder="Matrícula (ex: 20241001)" 
+                    class="px-4 py-2 border rounded-lg">
+                <input type="password" id="testPass" placeholder="Senha" 
+                    class="px-4 py-2 border rounded-lg">
+            </div>
+            <button onclick="testLogin()" class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600">
+                <i class="fas fa-play mr-2"></i>Testar Login
+            </button>
+            <div id="loginLog" class="mt-4"></div>
+        </div>
+
+        <!-- Test 4: Hash Function -->
+        <div class="test-card">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-lock mr-2"></i>4. Testar Hash de Senha
+            </h2>
+            <input type="text" id="hashInput" placeholder="Digite uma senha" 
+                class="px-4 py-2 border rounded-lg mb-4 w-full">
+            <button onclick="testHash()" class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
+                <i class="fas fa-play mr-2"></i>Gerar Hash
+            </button>
+            <div id="hashLog" class="mt-4"></div>
+        </div>
+
+        <!-- Test 5: LocalStorage -->
+        <div class="test-card">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-database mr-2"></i>5. LocalStorage Status
+            </h2>
+            <button onclick="testLocalStorage()" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600">
+                <i class="fas fa-play mr-2"></i>Verificar localStorage
+            </button>
+            <button onclick="clearLocalStorage()" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 ml-2">
+                <i class="fas fa-trash mr-2"></i>Limpar localStorage
+            </button>
+            <div id="storageLog" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script src="js/api-config.js"></script>
+    <script>
+        // Simple hash function
+        function simpleHash(str) {
+            if (!str) return '';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
+        function log(elementId, message, type = 'info') {
+            const logDiv = document.getElementById(elementId);
+            const logClass = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+            logDiv.innerHTML += `<div class="log ${logClass}">${new Date().toLocaleTimeString()} - ${message}</div>`;
+        }
+
+        async function testAPIConnection() {
+            const logId = 'apiLog';
+            document.getElementById(logId).innerHTML = '';
+            
+            log(logId, '🔄 Testando conexão com API...', 'info');
+            
+            try {
+                const response = await fetch('tables/students?limit=1');
+                log(logId, `📡 Status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(logId, '✅ API está funcionando!', 'success');
+                    log(logId, `📊 Estrutura da resposta: ${JSON.stringify(Object.keys(data))}`, 'info');
+                } else {
+                    log(logId, `❌ Erro: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(logId, `❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFetchStudents() {
+            const logId = 'studentsLog';
+            document.getElementById(logId).innerHTML = '';
+            
+            log(logId, '🔄 Buscando alunos...', 'info');
+            
+            try {
+                const response = await fetch('tables/students?limit=100');
+                
+                if (!response.ok) {
+                    log(logId, `❌ Erro HTTP: ${response.status}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                const students = data.data || [];
+                
+                log(logId, `✅ ${students.length} alunos encontrados`, 'success');
+                
+                if (students.length > 0) {
+                    log(logId, '📋 Primeiros 5 alunos:', 'info');
+                    students.slice(0, 5).forEach(student => {
+                        log(logId, `   • ${student.registration} - ${student.name} (Ativo: ${student.active})`, 'info');
+                    });
+                    
+                    // Check for registration field
+                    const firstStudent = students[0];
+                    log(logId, `🔍 Campos do primeiro aluno: ${JSON.stringify(Object.keys(firstStudent))}`, 'info');
+                } else {
+                    log(logId, '⚠️ Nenhum aluno cadastrado!', 'warning');
+                }
+            } catch (error) {
+                log(logId, `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const logId = 'loginLog';
+            document.getElementById(logId).innerHTML = '';
+            
+            const registration = document.getElementById('testReg').value.trim();
+            const password = document.getElementById('testPass').value;
+            
+            if (!registration || !password) {
+                log(logId, '❌ Preencha matrícula e senha', 'error');
+                return;
+            }
+            
+            log(logId, `🔄 Testando login: ${registration}`, 'info');
+            
+            try {
+                // Fetch students
+                const response = await fetch('tables/students?limit=100');
+                
+                if (!response.ok) {
+                    log(logId, `❌ Erro ao buscar dados: ${response.status}`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                const students = data.data || [];
+                
+                log(logId, `📊 Total de alunos: ${students.length}`, 'info');
+                
+                // Find student
+                const student = students.find(s => 
+                    s.registration && 
+                    s.registration.toString().trim() === registration.toString().trim()
+                );
+                
+                if (!student) {
+                    log(logId, `❌ Matrícula "${registration}" não encontrada`, 'error');
+                    log(logId, `💡 Matrículas disponíveis: ${students.slice(0,3).map(s => s.registration).join(', ')}...`, 'warning');
+                    return;
+                }
+                
+                log(logId, `✅ Aluno encontrado: ${student.name}`, 'success');
+                log(logId, `   • Matrícula: ${student.registration}`, 'info');
+                log(logId, `   • Ativo: ${student.active}`, 'info');
+                log(logId, `   • Primeiro login: ${student.first_login}`, 'info');
+                
+                // Check active status
+                if (student.active === false || student.active === 'false') {
+                    log(logId, '❌ Conta desativada', 'error');
+                    return;
+                }
+                
+                // Check password
+                let storedPassword = student.password;
+                
+                if (!storedPassword || storedPassword === '' || storedPassword === 'null') {
+                    log(logId, '⚠️ Senha não definida, usando matrícula como padrão', 'warning');
+                    storedPassword = simpleHash(registration);
+                }
+                
+                const inputPasswordHash = simpleHash(password);
+                
+                log(logId, `🔐 Hash armazenado: ${storedPassword}`, 'info');
+                log(logId, `🔐 Hash digitado: ${inputPasswordHash}`, 'info');
+                
+                if (inputPasswordHash === storedPassword) {
+                    log(logId, '✅ SENHA CORRETA! Login bem-sucedido!', 'success');
+                    
+                    if (student.first_login === true || student.first_login === 'true') {
+                        log(logId, '⚠️ Primeiro acesso - solicitar mudança de senha', 'warning');
+                    }
+                } else {
+                    log(logId, '❌ SENHA INCORRETA', 'error');
+                    log(logId, '💡 Dica: No primeiro acesso, use a matrícula como senha', 'warning');
+                }
+                
+            } catch (error) {
+                log(logId, `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function testHash() {
+            const logId = 'hashLog';
+            document.getElementById(logId).innerHTML = '';
+            
+            const input = document.getElementById('hashInput').value;
+            
+            if (!input) {
+                log(logId, '❌ Digite uma senha para testar', 'error');
+                return;
+            }
+            
+            const hash = simpleHash(input);
+            
+            log(logId, `📝 Entrada: "${input}"`, 'info');
+            log(logId, `🔐 Hash: ${hash}`, 'success');
+            log(logId, `📏 Comprimento: ${hash.length} caracteres`, 'info');
+            
+            // Test common registrations
+            log(logId, '--- Testes com matrículas comuns ---', 'info');
+            ['20241001', '20241002', '20242001'].forEach(reg => {
+                log(logId, `${reg} → ${simpleHash(reg)}`, 'info');
+            });
+        }
+
+        function testLocalStorage() {
+            const logId = 'storageLog';
+            document.getElementById(logId).innerHTML = '';
+            
+            log(logId, '🔍 Verificando localStorage...', 'info');
+            
+            const keys = Object.keys(localStorage);
+            log(logId, `📊 Total de itens: ${keys.length}`, 'info');
+            
+            if (keys.length === 0) {
+                log(logId, '✅ localStorage está vazio', 'success');
+            } else {
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    const preview = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                    log(logId, `   • ${key}: ${preview}`, 'info');
+                });
+            }
+            
+            // Check user login
+            const loggedUser = localStorage.getItem('loggedInUser');
+            if (loggedUser) {
+                log(logId, '⚠️ Usuário logado detectado:', 'warning');
+                try {
+                    const user = JSON.parse(loggedUser);
+                    log(logId, `   • Nome: ${user.name}`, 'info');
+                    log(logId, `   • Matrícula: ${user.registration}`, 'info');
+                } catch(e) {
+                    log(logId, '   • Erro ao parsear dados do usuário', 'error');
+                }
+            } else {
+                log(logId, '✅ Nenhum usuário logado', 'success');
+            }
+        }
+
+        function clearLocalStorage() {
+            if (confirm('Tem certeza que deseja limpar o localStorage?')) {
+                localStorage.clear();
+                log('storageLog', '✅ localStorage limpo!', 'success');
+                setTimeout(() => testLocalStorage(), 500);
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('🧪 Página de testes carregada');
+        });
+    </script>
+</body>
+</html>

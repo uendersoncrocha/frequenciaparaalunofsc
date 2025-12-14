@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testar Login - Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-600 to-purple-600 min-h-screen p-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Test Login Card -->
+        <div class="bg-white rounded-xl shadow-2xl p-8 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">🔐 Testar Sistema de Login</h1>
+            <p class="text-gray-600 mb-6">Ferramenta de debug para verificar autenticação</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Matrícula:</label>
+                    <input 
+                        type="text" 
+                        id="testReg" 
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                        placeholder="Ex: 20241001"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Senha:</label>
+                    <input 
+                        type="text" 
+                        id="testPass" 
+                        class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                        placeholder="Ex: 20241001"
+                    >
+                </div>
+
+                <button 
+                    onclick="testarLogin()" 
+                    class="w-full bg-blue-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-600">
+                    🔍 Testar Login
+                </button>
+
+                <button 
+                    onclick="listarUsuarios()" 
+                    class="w-full bg-green-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-green-600">
+                    📋 Listar Todos os Usuários
+                </button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultado"></div>
+
+        <!-- Console Logs -->
+        <div class="bg-gray-900 text-green-400 rounded-xl p-6 font-mono text-sm">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold">📟 Console de Debug</h3>
+                <button onclick="document.getElementById('console').innerHTML=''" class="bg-red-600 text-white px-3 py-1 rounded text-xs">
+                    Limpar
+                </button>
+            </div>
+            <div id="console" class="space-y-1 max-h-96 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        // Hash function
+        function simpleHash(str) {
+            if (!str) return '';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // Log to console div
+        function log(msg, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                error: 'text-red-400',
+                warning: 'text-yellow-400'
+            };
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                error: '❌',
+                warning: '⚠️'
+            };
+            const time = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `<div class="${colors[type]}">[${time}] ${icons[type]} ${msg}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(msg);
+        }
+
+        async function testarLogin() {
+            const registration = document.getElementById('testReg').value.trim();
+            const password = document.getElementById('testPass').value;
+            const resultado = document.getElementById('resultado');
+
+            resultado.innerHTML = '';
+            document.getElementById('console').innerHTML = '';
+
+            if (!registration || !password) {
+                log('Preencha matrícula e senha', 'error');
+                return;
+            }
+
+            log(`Iniciando teste de login para: ${registration}`, 'info');
+
+            try {
+                log('Buscando usuários no banco...', 'info');
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data;
+
+                log(`${students.length} usuários encontrados no banco`, 'success');
+
+                // Find student
+                const student = students.find(s => s.registration && s.registration.toString() === registration.toString());
+
+                if (!student) {
+                    log(`Matrícula ${registration} NÃO ENCONTRADA`, 'error');
+                    log('Matrículas disponíveis:', 'info');
+                    students.filter(s => s.registration).forEach(s => {
+                        log(`  - ${s.registration}: ${s.name} (${s.class_period})`, 'info');
+                    });
+                    
+                    resultado.innerHTML = `
+                        <div class="bg-red-100 border-2 border-red-400 rounded-xl p-6">
+                            <p class="text-red-800 font-bold text-xl">❌ ERRO: Matrícula não encontrada</p>
+                            <p class="text-red-700 mt-2">A matrícula "${registration}" não existe no sistema.</p>
+                            <p class="text-red-700 mt-2">Verifique o console acima para ver as matrículas disponíveis.</p>
+                        </div>`;
+                    return;
+                }
+
+                log(`✓ Usuário encontrado: ${student.name}`, 'success');
+                log(`  - Turma: ${student.class_period}`, 'info');
+                log(`  - Ativo: ${student.active ? 'Sim' : 'Não'}`, student.active ? 'success' : 'error');
+                log(`  - Tem senha: ${student.password ? 'Sim' : 'Não'}`, student.password ? 'success' : 'warning');
+
+                // Check active
+                if (!student.active) {
+                    log('Usuário INATIVO', 'error');
+                    resultado.innerHTML = `
+                        <div class="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-6">
+                            <p class="text-yellow-800 font-bold text-xl">⚠️ ERRO: Conta desativada</p>
+                            <p class="text-yellow-700 mt-2">A conta de "${student.name}" está desativada.</p>
+                            <p class="text-yellow-700">Ative-a no painel administrativo.</p>
+                        </div>`;
+                    return;
+                }
+
+                // Check password
+                let storedPassword = student.password;
+                if (!storedPassword || storedPassword === '' || storedPassword === 'null') {
+                    log('Usuário sem senha cadastrada, usando matrícula como padrão', 'warning');
+                    storedPassword = simpleHash(registration);
+                }
+
+                const inputPasswordHash = simpleHash(password);
+
+                log('Verificando senha...', 'info');
+                log(`  - Hash armazenado: ${storedPassword.substring(0, 15)}...`, 'info');
+                log(`  - Hash digitado:   ${inputPasswordHash.substring(0, 15)}...`, 'info');
+
+                if (inputPasswordHash === storedPassword) {
+                    log('✓ Senha CORRETA!', 'success');
+                    resultado.innerHTML = `
+                        <div class="bg-green-100 border-2 border-green-400 rounded-xl p-6">
+                            <p class="text-green-800 font-bold text-xl mb-4">✅ LOGIN BEM-SUCEDIDO!</p>
+                            <div class="space-y-2 text-green-700">
+                                <p><strong>Nome:</strong> ${student.name}</p>
+                                <p><strong>Matrícula:</strong> ${student.registration}</p>
+                                <p><strong>Turma:</strong> ${student.class_period}</p>
+                                <p><strong>Email:</strong> ${student.email}</p>
+                                <p class="mt-4 pt-4 border-t-2 border-green-300">
+                                    <strong>✓ Este usuário pode fazer login com sucesso!</strong>
+                                </p>
+                            </div>
+                        </div>`;
+                } else {
+                    log('✗ Senha INCORRETA', 'error');
+                    resultado.innerHTML = `
+                        <div class="bg-red-100 border-2 border-red-400 rounded-xl p-6">
+                            <p class="text-red-800 font-bold text-xl">❌ ERRO: Senha incorreta</p>
+                            <p class="text-red-700 mt-2">A senha digitada não corresponde à senha cadastrada.</p>
+                            <p class="text-red-700 mt-2"><strong>Dica:</strong> A senha padrão é igual à matrícula (ex: 20241001)</p>
+                            <p class="text-red-700 mt-2">Se não funcionar, execute o gerador de matrículas novamente.</p>
+                        </div>`;
+                }
+
+            } catch (error) {
+                log(`ERRO CRÍTICO: ${error.message}`, 'error');
+                resultado.innerHTML = `
+                    <div class="bg-red-100 border-2 border-red-400 rounded-xl p-6">
+                        <p class="text-red-800 font-bold text-xl">💥 ERRO DE CONEXÃO</p>
+                        <p class="text-red-700 mt-2">${error.message}</p>
+                    </div>`;
+            }
+        }
+
+        async function listarUsuarios() {
+            const resultado = document.getElementById('resultado');
+            document.getElementById('console').innerHTML = '';
+
+            log('Buscando todos os usuários...', 'info');
+
+            try {
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data;
+
+                log(`${students.length} usuários encontrados`, 'success');
+
+                let html = '<div class="bg-white rounded-xl shadow-2xl p-6">';
+                html += '<h2 class="text-2xl font-bold text-gray-800 mb-4">📋 Lista de Usuários Cadastrados</h2>';
+                html += '<div class="overflow-x-auto">';
+                html += '<table class="w-full text-sm">';
+                html += '<thead class="bg-gray-100"><tr>';
+                html += '<th class="p-2 text-left border">Nome</th>';
+                html += '<th class="p-2 text-left border">Matrícula</th>';
+                html += '<th class="p-2 text-left border">Turma</th>';
+                html += '<th class="p-2 text-center border">Senha?</th>';
+                html += '<th class="p-2 text-center border">Ativo?</th>';
+                html += '</tr></thead><tbody>';
+
+                students.forEach(s => {
+                    const temSenha = s.password && s.password !== '' && s.password !== 'null';
+                    html += '<tr class="hover:bg-gray-50">';
+                    html += `<td class="p-2 border">${s.name}</td>`;
+                    html += `<td class="p-2 border font-mono ${s.registration ? '' : 'text-red-600'}">${s.registration || 'SEM MATRÍCULA'}</td>`;
+                    html += `<td class="p-2 border">${s.class_period}</td>`;
+                    html += `<td class="p-2 border text-center ${temSenha ? 'text-green-600' : 'text-red-600'}">${temSenha ? '✓' : '✗'}</td>`;
+                    html += `<td class="p-2 border text-center ${s.active ? 'text-green-600' : 'text-red-600'}">${s.active ? '✓' : '✗'}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div></div>';
+                resultado.innerHTML = html;
+
+                // Log summary
+                const semMatricula = students.filter(s => !s.registration);
+                const semSenha = students.filter(s => !s.password || s.password === '' || s.password === 'null');
+                const inativos = students.filter(s => !s.active);
+
+                if (semMatricula.length > 0) log(`⚠️ ${semMatricula.length} usuários SEM MATRÍCULA`, 'warning');
+                if (semSenha.length > 0) log(`⚠️ ${semSenha.length} usuários SEM SENHA`, 'warning');
+                if (inativos.length > 0) log(`⚠️ ${inativos.length} usuários INATIVOS`, 'warning');
+
+            } catch (error) {
+                log(`ERRO: ${error.message}`, 'error');
+            }
+        }
+
+        log('Sistema de teste carregado. Digite matrícula e senha e clique em "Testar Login"', 'info');
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Usuários - Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Verificar Status dos Usuários</h1>
+        
+        <button onclick="verificarUsuarios()" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-600 mb-6">
+            Verificar Todos os Usuários
+        </button>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        async function verificarUsuarios() {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = '<p class="text-blue-600">Carregando...</p>';
+
+            try {
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const students = data.data;
+
+                let html = '<div class="overflow-x-auto">';
+                html += '<table class="w-full text-sm border">';
+                html += '<thead class="bg-gray-100"><tr>';
+                html += '<th class="p-2 border">Nome</th>';
+                html += '<th class="p-2 border">Matrícula</th>';
+                html += '<th class="p-2 border">Tem Senha?</th>';
+                html += '<th class="p-2 border">Ativo?</th>';
+                html += '<th class="p-2 border">Turma</th>';
+                html += '</tr></thead><tbody>';
+
+                students.forEach(student => {
+                    const temSenha = student.password && student.password !== '';
+                    const corSenha = temSenha ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const corAtivo = student.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    
+                    html += '<tr class="hover:bg-gray-50">';
+                    html += `<td class="p-2 border">${student.name}</td>`;
+                    html += `<td class="p-2 border font-mono">${student.registration || 'SEM MATRÍCULA'}</td>`;
+                    html += `<td class="p-2 border ${corSenha}">${temSenha ? 'SIM' : 'NÃO'}</td>`;
+                    html += `<td class="p-2 border ${corAtivo}">${student.active ? 'SIM' : 'NÃO'}</td>`;
+                    html += `<td class="p-2 border">${student.class_period}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div>';
+
+                const semMatricula = students.filter(s => !s.registration || s.registration === '');
+                const semSenha = students.filter(s => !s.password || s.password === '');
+                const inativos = students.filter(s => !s.active);
+
+                html += '<div class="mt-6 space-y-4">';
+                
+                if (semMatricula.length > 0) {
+                    html += `<div class="bg-red-100 border-2 border-red-400 rounded-lg p-4">
+                        <p class="text-red-800 font-bold">⚠️ ${semMatricula.length} usuários SEM MATRÍCULA</p>
+                        <p class="text-red-700">Execute o gerador de matrículas!</p>
+                    </div>`;
+                }
+
+                if (semSenha.length > 0) {
+                    html += `<div class="bg-red-100 border-2 border-red-400 rounded-lg p-4">
+                        <p class="text-red-800 font-bold">⚠️ ${semSenha.length} usuários SEM SENHA</p>
+                        <p class="text-red-700">Execute o gerador de matrículas!</p>
+                    </div>`;
+                }
+
+                if (inativos.length > 0) {
+                    html += `<div class="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4">
+                        <p class="text-yellow-800 font-bold">⚠️ ${inativos.length} usuários INATIVOS</p>
+                        <p class="text-yellow-700">Ative-os no painel admin se necessário</p>
+                    </div>`;
+                }
+
+                if (semMatricula.length === 0 && semSenha.length === 0 && inativos.length === 0) {
+                    html += `<div class="bg-green-100 border-2 border-green-400 rounded-lg p-4">
+                        <p class="text-green-800 font-bold">✅ Todos os ${students.length} usuários estão OK!</p>
+                        <p class="text-green-700">Matrículas e senhas cadastradas, todos ativos</p>
+                    </div>`;
+                }
+
+                html += '</div>';
+
+                resultado.innerHTML = html;
+
+            } catch (error) {
+                resultado.innerHTML = `<div class="bg-red-100 border-2 border-red-400 rounded-lg p-4">
+                    <p class="text-red-800 font-bold">Erro: ${error.message}</p>
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html>

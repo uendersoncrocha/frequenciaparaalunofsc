@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste: Fluxo de Cirurgia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-heartbeat text-red-500 mr-2"></i>
+            Teste: Sistema de Registro de Cirurgias
+        </h1>
+
+        <!-- Status -->
+        <div id="testStatus" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">
+                <i class="fas fa-clipboard-check text-blue-500 mr-2"></i>
+                Status dos Testes
+            </h2>
+            <div id="statusList" class="space-y-2">
+                <p class="text-gray-600">Iniciando testes...</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">
+                <i class="fas fa-play-circle text-green-500 mr-2"></i>
+                Ações
+            </h2>
+            <div class="space-y-3">
+                <button onclick="runAllTests()" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
+                    <i class="fas fa-play mr-2"></i>Executar Todos os Testes
+                </button>
+                <button onclick="createTestStudent()" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">
+                    <i class="fas fa-user-plus mr-2"></i>Criar Aluno de Teste
+                </button>
+                <button onclick="testTableConnection()" class="w-full bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition">
+                    <i class="fas fa-database mr-2"></i>Testar Conexão com Tabela
+                </button>
+                <button onclick="createTestSurgery()" class="w-full bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition">
+                    <i class="fas fa-plus-circle mr-2"></i>Criar Cirurgia de Teste
+                </button>
+                <button onclick="listSurgeries()" class="w-full bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-600 transition">
+                    <i class="fas fa-list mr-2"></i>Listar Cirurgias
+                </button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">
+                <i class="fas fa-chart-bar text-purple-500 mr-2"></i>
+                Resultados
+            </h2>
+            <div id="results" class="space-y-2 text-sm">
+                <p class="text-gray-600">Nenhum teste executado ainda.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testStudent = null;
+
+        function addStatus(message, type = 'info') {
+            const statusList = document.getElementById('statusList');
+            const colors = {
+                success: 'text-green-600',
+                error: 'text-red-600',
+                warning: 'text-yellow-600',
+                info: 'text-blue-600'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const div = document.createElement('div');
+            div.className = `flex items-start gap-2 ${colors[type]}`;
+            div.innerHTML = `<i class="fas ${icons[type]} mt-1"></i><span>${message}</span>`;
+            statusList.appendChild(div);
+            statusList.scrollTop = statusList.scrollHeight;
+        }
+
+        function addResult(title, data) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 rounded p-3 border border-gray-200';
+            div.innerHTML = `
+                <p class="font-bold text-gray-800 mb-1">${title}</p>
+                <pre class="text-xs text-gray-600 overflow-auto">${JSON.stringify(data, null, 2)}</pre>
+            `;
+            results.appendChild(div);
+        }
+
+        async function testTableConnection() {
+            addStatus('🔍 Testando conexão com tabela surgeries...', 'info');
+            try {
+                const response = await fetch('tables/surgeries?limit=1');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addStatus('✅ Conexão com tabela surgeries OK!', 'success');
+                    addResult('Resposta da API', data);
+                    return true;
+                } else {
+                    addStatus('❌ Erro na conexão: ' + response.status, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addStatus('❌ Erro: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        async function createTestStudent() {
+            addStatus('👤 Criando aluno de teste...', 'info');
+            try {
+                const studentData = {
+                    name: 'Teste Cirurgia ' + Date.now(),
+                    email: 'teste.cirurgia@sistema.com',
+                    registration: '2024' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
+                    password: 'teste123',
+                    class_period: '2024.2',
+                    active: true,
+                    first_login: false,
+                    photo_url: ''
+                };
+
+                const response = await fetch('tables/students', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(studentData)
+                });
+
+                if (response.ok) {
+                    testStudent = await response.json();
+                    addStatus('✅ Aluno criado: ' + testStudent.name, 'success');
+                    addResult('Aluno de Teste', testStudent);
+                    return testStudent;
+                } else {
+                    addStatus('❌ Erro ao criar aluno: ' + response.status, 'error');
+                    return null;
+                }
+            } catch (error) {
+                addStatus('❌ Erro: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function createTestSurgery() {
+            if (!testStudent) {
+                addStatus('⚠️ Criando aluno de teste primeiro...', 'warning');
+                testStudent = await createTestStudent();
+                if (!testStudent) return;
+            }
+
+            addStatus('🩺 Criando cirurgia de teste...', 'info');
+            try {
+                const surgeryData = {
+                    student_id: testStudent.id,
+                    student_name: testStudent.name,
+                    registration: testStudent.registration,
+                    class_period: testStudent.class_period,
+                    date: new Date().toISOString().split('T')[0],
+                    perfusionist_main: 'Dr. João Silva',
+                    perfusionist_auxiliary: testStudent.name,
+                    surgeon_name: 'Dr. Carlos Santos',
+                    surgery_type: 'Revascularização do Miocárdio',
+                    cec_time: 120,
+                    clamp_time: 90,
+                    total_surgery_time: 180,
+                    was_responsible: true,
+                    notes: 'Cirurgia de teste - Sistema v8.5',
+                    start_time: '08:30',
+                    end_time: '12:30',
+                    status: 'completed',
+                    validated_at: '',
+                    validated_by: '',
+                    validation_notes: '',
+                    attachment_url: 'data:text/plain;base64,VGVzdGU=',
+                    attachment_name: 'teste.txt',
+                    attachment_type: 'text/plain'
+                };
+
+                const response = await fetch('tables/surgeries', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(surgeryData)
+                });
+
+                if (response.ok) {
+                    const surgery = await response.json();
+                    addStatus('✅ Cirurgia criada com sucesso!', 'success');
+                    addResult('Cirurgia de Teste', surgery);
+                    return surgery;
+                } else {
+                    const error = await response.text();
+                    addStatus('❌ Erro ao criar cirurgia: ' + error, 'error');
+                    return null;
+                }
+            } catch (error) {
+                addStatus('❌ Erro: ' + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function listSurgeries() {
+            addStatus('📋 Listando cirurgias...', 'info');
+            try {
+                const response = await fetch('tables/surgeries?limit=10');
+                const data = await response.json();
+
+                if (response.ok) {
+                    addStatus(`✅ ${data.data.length} cirurgias encontradas`, 'success');
+                    addResult('Lista de Cirurgias', data);
+                } else {
+                    addStatus('❌ Erro ao listar: ' + response.status, 'error');
+                }
+            } catch (error) {
+                addStatus('❌ Erro: ' + error.message, 'error');
+            }
+        }
+
+        async function runAllTests() {
+            document.getElementById('statusList').innerHTML = '<p class="text-blue-600 font-bold">🚀 Iniciando bateria de testes...</p>';
+            
+            // Test 1: Table Connection
+            await testTableConnection();
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Test 2: Create Student
+            await createTestStudent();
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Test 3: Create Surgery
+            await createTestSurgery();
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Test 4: List Surgeries
+            await listSurgeries();
+
+            addStatus('🎉 Todos os testes concluídos!', 'success');
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            addStatus('✅ Página de testes carregada', 'success');
+            addStatus('👉 Clique em "Executar Todos os Testes" para começar', 'info');
+        });
+    </script>
+</body>
+</html>
