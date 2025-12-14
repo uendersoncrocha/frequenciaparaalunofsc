@@ -1,15 +1,10 @@
-name = "sistema-cirurgias-v9-2"
-main = "index.html"
-compatibility_date = "2024-12-14"
-workers_dev = true
+name = "meu-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
 
-[site]
-bucket = "./"
-
-# Arquivos a incluir
-[build]
-command = ""
-
-# Variáveis de ambiente (se necessário)
-[vars]
-ENVIRONMENT = "production"
+# Configuração para importar arquivos HTML como texto
+[rules]
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
