@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Login - Sistema de Presença</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Sistema completo para controle e registro de cirurgias cardiovasculares com perfusão">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cirurgias CEC">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        .input-field {
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        .input-field:hover {
+            border-color: #cbd5e0;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .login-card {
+            animation: slideIn 0.5s ease-out;
+        }
+        .btn-primary {
+            transition: all 0.3s;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card w-full max-w-md mx-4">
+        <!-- Header -->
+        <div class="login-header">
+            <div class="mb-4">
+                <i class="fas fa-heartbeat text-6xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold mb-2">Sistema de Presença</h1>
+            <p class="text-purple-200">Controle de Cirurgias Cardiovasculares</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-user-lock mr-2"></i>Login de Perfusionista
+            </h2>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mb-4 p-4 bg-red-100 border-2 border-red-400 rounded-lg">
+                <p class="text-red-800 text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="errorText"></span>
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form id="loginForm" class="space-y-6">
+                <!-- Registration -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-id-card mr-2"></i>Matrícula:
+                    </label>
+                    <input 
+                        type="text" 
+                        id="registration" 
+                        class="input-field w-full p-4 rounded-lg focus:outline-none"
+                        placeholder="Digite sua matrícula..."
+                        required
+                        autocomplete="username"
+                    >
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2"></i>Senha:
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="input-field w-full p-4 rounded-lg focus:outline-none pr-12"
+                            placeholder="Digite sua senha..."
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword"
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center">
+                    <input 
+                        type="checkbox" 
+                        id="rememberMe" 
+                        class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    >
+                    <label for="rememberMe" class="ml-2 text-sm text-gray-600">
+                        Lembrar minha matrícula
+                    </label>
+                </div>
+
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    class="btn-login w-full py-4 rounded-lg font-bold text-lg"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                </button>
+            </form>
+
+            <!-- Admin Link & Install Button -->
+            <div class="mt-6 flex flex-col gap-3 items-center">
+                <a href="admin-login.html" class="text-purple-600 hover:text-purple-800 text-sm font-semibold">
+                    <i class="fas fa-user-shield mr-1"></i>Acesso Administrativo
+                </a>
+                <button id="installButtonLogin" onclick="handleInstallClickLogin()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition shadow-md hover:shadow-lg flex items-center gap-2 text-sm">
+                    <i class="fas fa-download"></i>
+                    <span>Instalar App</span>
+                </button>
+            </div>
+
+            <!-- Info -->
+            <div class="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-info-circle text-white text-lg"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-blue-900 font-semibold mb-1">
+                            <strong>✨ Primeiro acesso?</strong>
+                        </p>
+                        <p class="text-sm text-blue-800">
+                            • <strong>Login:</strong> Use sua matrícula (ex: 20241001)<br>
+                            • <strong>Senha:</strong> Use sua matrícula<br>
+                            • <strong>Importante:</strong> Você será solicitado a criar uma nova senha
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="mt-4 flex justify-center gap-4 text-xs text-gray-500">
+                <span><i class="fas fa-shield-alt mr-1"></i>Conexão Segura</span>
+                <span><i class="fas fa-lock mr-1"></i>Dados Criptografados</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Mudança de Senha Obrigatória -->
+    <div id="changePasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="text-yellow-500 text-6xl mb-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Primeiro Acesso</h3>
+                <p class="text-gray-600">Por segurança, você deve alterar sua senha antes de continuar.</p>
+            </div>
+
+            <!-- Erro de mudança de senha -->
+            <div id="changePasswordError" class="hidden mb-4 p-3 bg-red-100 border-2 border-red-400 rounded-lg">
+                <p class="text-red-800 text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="changePasswordErrorText"></span>
+                </p>
+            </div>
+
+            <form id="changePasswordForm" class="space-y-4">
+                <!-- Nova Senha -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2"></i>Nova Senha:
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="newPassword" 
+                            class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 pr-12"
+                            placeholder="Digite sua nova senha..."
+                            required
+                            minlength="6"
+                        >
+                        <button 
+                            type="button" 
+                            id="toggleNewPassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <i class="fas fa-eye" id="eyeIconNew"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Mínimo de 6 caracteres</p>
+                </div>
+
+                <!-- Confirmar Nova Senha -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-lock mr-2"></i>Confirmar Nova Senha:
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            class="input-field w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 pr-12"
+                            placeholder="Digite novamente sua nova senha..."
+                            required
+                            minlength="6"
+                        >
+                        <button 
+                            type="button" 
+                            id="toggleConfirmPassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <i class="fas fa-eye" id="eyeIconConfirm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botão de Confirmar -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold text-lg hover:shadow-xl transition"
+                >
+                    <i class="fas fa-check-circle mr-2"></i>Confirmar Nova Senha
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Native-like Animations -->
+    <link rel="stylesheet" href="css/native-animations.css">
+    
+    <!-- Core Scripts -->
+    <script src="js/api-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/pwa.js"></script>
+    
+    <!-- Native-like Features -->
+    <script src="js/native-gestures.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/mobile-enhancements.js"></script>
+    <script src="js/install-app.js"></script>
+    
+    <script>
+        // Install button handler
+        function handleInstallClickLogin() {
+            // Redirecionar para página de download/instalação
+            window.location.href = 'download-app.html';
+        }
+        
+        // Check if should show onboarding
+        if (!localStorage.getItem('onboardingCompleted') && window.location.pathname !== '/onboarding.html') {
+            window.location.href = 'onboarding.html';
+        }
+    </script>
+</body>
+</html>

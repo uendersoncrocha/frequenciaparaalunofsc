@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Dados do Sistema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
+                <i class="fas fa-broom mr-3"></i>Limpar Dados do Sistema
+            </h1>
+            <p class="text-white text-lg">Remover todos os dados de teste antes de começar a usar</p>
+        </div>
+
+        <!-- Warning Card -->
+        <div class="glass-effect rounded-xl p-8 max-w-4xl mx-auto mb-6">
+            <div class="bg-red-100 border-4 border-red-500 rounded-xl p-6 mb-6">
+                <h2 class="text-2xl font-bold text-red-900 mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>⚠️ ATENÇÃO - AÇÃO IRREVERSÍVEL! ⚠️
+                </h2>
+                <div class="text-red-800 space-y-2">
+                    <p class="font-bold text-lg">Esta ação irá EXCLUIR PERMANENTEMENTE:</p>
+                    <ul class="list-disc list-inside space-y-1 ml-4">
+                        <li>✗ Todas as cirurgias registradas</li>
+                        <li>✗ Todas as presenças registradas</li>
+                        <li>✗ Todos os módulos/aulas registrados</li>
+                    </ul>
+                    <p class="mt-4 font-bold text-red-900">
+                        ⚠️ NÃO É POSSÍVEL RECUPERAR OS DADOS APÓS A EXCLUSÃO!
+                    </p>
+                    <p class="mt-2">
+                        Use esta ferramenta APENAS se você tem certeza que deseja remover todos os dados de teste.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Status Section -->
+            <div id="statusSection" class="mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-bar mr-2"></i>Status Atual do Sistema
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-600" id="surgeriesCount">-</div>
+                        <div class="text-sm text-gray-600">Cirurgias</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-green-600" id="attendanceCount">-</div>
+                        <div class="text-sm text-gray-600">Presenças</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-purple-600" id="modulesCount">-</div>
+                        <div class="text-sm text-gray-600">Módulos</div>
+                    </div>
+                </div>
+                <button onclick="loadCurrentStatus()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <i class="fas fa-sync-alt mr-2"></i>Atualizar Contadores
+                </button>
+            </div>
+
+            <!-- Confirmation Section -->
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-bold text-yellow-900 mb-4">
+                    <i class="fas fa-shield-alt mr-2"></i>Confirmação de Segurança
+                </h3>
+                <p class="text-yellow-800 mb-4">
+                    Para prosseguir com a limpeza, digite a senha de confirmação:
+                </p>
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        Digite: <code class="bg-gray-200 px-2 py-1 rounded">LIMPAR TUDO</code>
+                    </label>
+                    <input type="text" id="confirmPassword" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none" placeholder="Digite a senha de confirmação">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-4">
+                <button onclick="clearAllData()" class="w-full bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-lg hover:shadow-xl">
+                    <i class="fas fa-trash-alt mr-3"></i>LIMPAR TODOS OS DADOS
+                </button>
+                
+                <button onclick="window.location.href='admin.html'" class="w-full bg-gray-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-700 transition">
+                    <i class="fas fa-arrow-left mr-3"></i>Cancelar e Voltar
+                </button>
+            </div>
+
+            <!-- Log Section -->
+            <div id="logSection" class="mt-6 hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-terminal mr-2"></i>Log de Operações
+                </h3>
+                <div id="logOutput" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                    <!-- Logs will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-config.js"></script>
+    <script>
+        console.log('🧹 Ferramenta de Limpeza de Dados carregada');
+
+        let surgeriesCount = 0;
+        let attendanceCount = 0;
+        let modulesCount = 0;
+
+        // Load current status
+        async function loadCurrentStatus() {
+            try {
+                log('📊 Carregando status atual do sistema...', 'info');
+                
+                // Load surgeries
+                const surgeriesResponse = await fetch('tables/surgeries?limit=10000');
+                const surgeriesData = await surgeriesResponse.json();
+                surgeriesCount = surgeriesData.data.length;
+                document.getElementById('surgeriesCount').textContent = surgeriesCount;
+                log(`✅ Cirurgias encontradas: ${surgeriesCount}`, 'success');
+                
+                // Load attendance
+                const attendanceResponse = await fetch('tables/attendance?limit=10000');
+                const attendanceData = await attendanceResponse.json();
+                attendanceCount = attendanceData.data.length;
+                document.getElementById('attendanceCount').textContent = attendanceCount;
+                log(`✅ Presenças encontradas: ${attendanceCount}`, 'success');
+                
+                // Load modules
+                const modulesResponse = await fetch('tables/modules?limit=10000');
+                const modulesData = await modulesResponse.json();
+                modulesCount = modulesData.data.length;
+                document.getElementById('modulesCount').textContent = modulesCount;
+                log(`✅ Módulos encontrados: ${modulesCount}`, 'success');
+                
+                const total = surgeriesCount + attendanceCount + modulesCount;
+                log(`📊 Total de registros: ${total}`, 'info');
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar status:', error);
+                log(`❌ Erro ao carregar status: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear all data
+        async function clearAllData() {
+            const confirmText = document.getElementById('confirmPassword').value;
+            
+            if (confirmText !== 'LIMPAR TUDO') {
+                alert('❌ Senha de confirmação incorreta!\n\nDigite: LIMPAR TUDO');
+                return;
+            }
+            
+            if (!confirm('⚠️ ÚLTIMA CONFIRMAÇÃO!\n\nVocê está prestes a EXCLUIR PERMANENTEMENTE todos os dados:\n\n' +
+                `- ${surgeriesCount} cirurgias\n` +
+                `- ${attendanceCount} presenças\n` +
+                `- ${modulesCount} módulos\n\n` +
+                'Esta ação NÃO pode ser desfeita!\n\nDeseja continuar?')) {
+                log('❌ Operação cancelada pelo usuário', 'warning');
+                return;
+            }
+            
+            // Show log section
+            document.getElementById('logSection').classList.remove('hidden');
+            
+            log('🚀 Iniciando limpeza de dados...', 'info');
+            log('═══════════════════════════════════════', 'info');
+            
+            let totalDeleted = 0;
+            let errors = 0;
+            
+            // Clear surgeries
+            try {
+                log('🔄 Limpando cirurgias...', 'info');
+                const surgeriesResponse = await fetch('tables/surgeries?limit=10000');
+                const surgeriesData = await surgeriesResponse.json();
+                
+                for (let i = 0; i < surgeriesData.data.length; i++) {
+                    const surgery = surgeriesData.data[i];
+                    try {
+                        await fetch(`tables/surgeries/${surgery.id}`, { method: 'DELETE' });
+                        totalDeleted++;
+                        if ((i + 1) % 10 === 0 || i === surgeriesData.data.length - 1) {
+                            log(`  ✓ Cirurgias excluídas: ${i + 1}/${surgeriesData.data.length}`, 'success');
+                        }
+                    } catch (err) {
+                        errors++;
+                        log(`  ✗ Erro ao excluir cirurgia ${surgery.id}: ${err.message}`, 'error');
+                    }
+                }
+                log(`✅ Cirurgias limpas: ${surgeriesData.data.length}`, 'success');
+            } catch (error) {
+                log(`❌ Erro ao limpar cirurgias: ${error.message}`, 'error');
+            }
+            
+            // Clear attendance
+            try {
+                log('🔄 Limpando presenças...', 'info');
+                const attendanceResponse = await fetch('tables/attendance?limit=10000');
+                const attendanceData = await attendanceResponse.json();
+                
+                for (let i = 0; i < attendanceData.data.length; i++) {
+                    const att = attendanceData.data[i];
+                    try {
+                        await fetch(`tables/attendance/${att.id}`, { method: 'DELETE' });
+                        totalDeleted++;
+                        if ((i + 1) % 10 === 0 || i === attendanceData.data.length - 1) {
+                            log(`  ✓ Presenças excluídas: ${i + 1}/${attendanceData.data.length}`, 'success');
+                        }
+                    } catch (err) {
+                        errors++;
+                        log(`  ✗ Erro ao excluir presença ${att.id}: ${err.message}`, 'error');
+                    }
+                }
+                log(`✅ Presenças limpas: ${attendanceData.data.length}`, 'success');
+            } catch (error) {
+                log(`❌ Erro ao limpar presenças: ${error.message}`, 'error');
+            }
+            
+            // Clear modules
+            try {
+                log('🔄 Limpando módulos...', 'info');
+                const modulesResponse = await fetch('tables/modules?limit=10000');
+                const modulesData = await modulesResponse.json();
+                
+                for (let i = 0; i < modulesData.data.length; i++) {
+                    const module = modulesData.data[i];
+                    try {
+                        await fetch(`tables/modules/${module.id}`, { method: 'DELETE' });
+                        totalDeleted++;
+                        if ((i + 1) % 10 === 0 || i === modulesData.data.length - 1) {
+                            log(`  ✓ Módulos excluídos: ${i + 1}/${modulesData.data.length}`, 'success');
+                        }
+                    } catch (err) {
+                        errors++;
+                        log(`  ✗ Erro ao excluir módulo ${module.id}: ${err.message}`, 'error');
+                    }
+                }
+                log(`✅ Módulos limpos: ${modulesData.data.length}`, 'success');
+            } catch (error) {
+                log(`❌ Erro ao limpar módulos: ${error.message}`, 'error');
+            }
+            
+            log('═══════════════════════════════════════', 'info');
+            log(`🎉 Limpeza concluída!`, 'success');
+            log(`📊 Total de registros excluídos: ${totalDeleted}`, 'success');
+            if (errors > 0) {
+                log(`⚠️ Erros encontrados: ${errors}`, 'warning');
+            }
+            log('═══════════════════════════════════════', 'info');
+            
+            // Reload status
+            await loadCurrentStatus();
+            
+            alert(`✅ Limpeza Concluída!\n\n${totalDeleted} registros foram excluídos.\n\nO sistema está pronto para começar a ser usado.`);
+        }
+
+        // Log function
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                warning: 'text-yellow-400',
+                error: 'text-red-400'
+            };
+            
+            const color = colors[type] || 'text-green-400';
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = color;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logOutput.appendChild(logEntry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Load status on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCurrentStatus();
+        });
+    </script>
+</body>
+</html>

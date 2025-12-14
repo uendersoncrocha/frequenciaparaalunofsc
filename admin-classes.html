@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Turmas - Sistema CEC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 min-h-screen">
+    
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="goBack()" class="text-gray-600 hover:text-indigo-600 transition">
+                        <i class="fas fa-arrow-left text-2xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-chalkboard-teacher text-indigo-600 mr-2"></i>
+                            Gestão de Turmas
+                        </h1>
+                        <p class="text-sm text-gray-500">Gerenciar turmas do sistema</p>
+                    </div>
+                </div>
+                
+                <button onclick="showCreateClassModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all">
+                    <i class="fas fa-plus mr-2"></i>
+                    Nova Turma
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Statistics Cards -->
+        <div id="statisticsSection" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Total de Turmas</p>
+                        <p class="text-3xl font-bold text-indigo-600" id="totalClasses">0</p>
+                    </div>
+                    <i class="fas fa-chalkboard-teacher text-4xl text-indigo-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Turmas Ativas</p>
+                        <p class="text-3xl font-bold text-green-600" id="activeClasses">0</p>
+                    </div>
+                    <i class="fas fa-check-circle text-4xl text-green-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Total de Alunos</p>
+                        <p class="text-3xl font-bold text-blue-600" id="totalStudents">0</p>
+                    </div>
+                    <i class="fas fa-users text-4xl text-blue-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Turmas Inativas</p>
+                        <p class="text-3xl font-bold text-red-600" id="inactiveClasses">0</p>
+                    </div>
+                    <i class="fas fa-times-circle text-4xl text-red-200"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-search mr-1"></i>Buscar
+                    </label>
+                    <input type="text" id="searchInput" placeholder="Nome, código ou curso..." 
+                           onkeyup="filterClasses()" 
+                           class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-toggle-on mr-1"></i>Status
+                    </label>
+                    <select id="statusFilter" onchange="filterClasses()" 
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+                        <option value="all">Todas</option>
+                        <option value="active">Apenas Ativas</option>
+                        <option value="inactive">Apenas Inativas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-1"></i>Período
+                    </label>
+                    <select id="periodFilter" onchange="filterClasses()" 
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+                        <option value="all">Todos</option>
+                        <option value="Matutino">Matutino</option>
+                        <option value="Vespertino">Vespertino</option>
+                        <option value="Noturno">Noturno</option>
+                        <option value="Integral">Integral</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-sort mr-1"></i>Ordenar por
+                    </label>
+                    <select id="sortFilter" onchange="filterClasses()" 
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+                        <option value="name-asc">Nome (A-Z)</option>
+                        <option value="name-desc">Nome (Z-A)</option>
+                        <option value="year-desc">Ano (Mais recente)</option>
+                        <option value="year-asc">Ano (Mais antigo)</option>
+                        <option value="students-desc">Mais alunos</option>
+                        <option value="students-asc">Menos alunos</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="clearFilters()" 
+                            class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-redo mr-2"></i>Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classes Grid -->
+        <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-600 mb-4"></i>
+                <p class="text-lg text-gray-600">Carregando turmas...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create/Edit Class Modal -->
+    <div id="classModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold" id="modalTitle">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nova Turma
+                    </h2>
+                    <button onclick="closeClassModal()" class="text-white hover:text-gray-200 transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="classForm" class="p-6 space-y-4">
+                <input type="hidden" id="classId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Turma *</label>
+                        <input type="text" id="className" required
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                               placeholder="Ex: Turma A 2024">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Código *</label>
+                        <input type="text" id="classCode" required
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                               placeholder="Ex: 2024-A">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ano *</label>
+                        <input type="number" id="classYear" required
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                               placeholder="2024" min="2020" max="2099">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Semestre *</label>
+                        <select id="classSemester" required
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                            <option value="">Selecione</option>
+                            <option value="1">1º Semestre</option>
+                            <option value="2">2º Semestre</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Período *</label>
+                        <select id="classPeriod" required
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                            <option value="">Selecione</option>
+                            <option value="Matutino">Matutino</option>
+                            <option value="Vespertino">Vespertino</option>
+                            <option value="Noturno">Noturno</option>
+                            <option value="Integral">Integral</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Curso</label>
+                        <input type="text" id="classCourse"
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                               placeholder="Ex: Perfusão Cardiovascular">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                        <input type="date" id="classStartDate"
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Término</label>
+                        <input type="date" id="classEndDate"
+                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                        <textarea id="classDescription" rows="3"
+                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition resize-none"
+                                  placeholder="Descrição adicional da turma..."></textarea>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="classActive" checked
+                                   class="w-5 h-5 text-indigo-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-indigo-200">
+                            <span class="text-sm font-medium text-gray-700">Turma Ativa</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-4 pt-4 border-t">
+                    <button type="button" onclick="closeClassModal()" 
+                            class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar Turma
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api-config.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/admin-classes.js"></script>
+    
+    <script>
+        const adminSession = JSON.parse(localStorage.getItem('adminSession') || 'null');
+        if (!adminSession || adminSession.role !== 'coordinator') {
+            window.location.href = 'admin-login.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClasses();
+        });
+    </script>
+</body>
+</html>

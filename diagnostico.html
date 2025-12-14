@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico do Sistema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-stethoscope text-blue-600 mr-3"></i>
+                Diagnóstico do Sistema
+            </h1>
+            <p class="text-gray-600">Verificando estado de todas as tabelas...</p>
+        </div>
+
+        <div id="results" class="space-y-4">
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4">
+                <p class="text-yellow-700">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    Executando diagnóstico...
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-6">
+            <h3 class="font-bold text-blue-800 mb-2">Ações Rápidas:</h3>
+            <div class="space-x-2">
+                <a href="setup-inicial.html" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    <i class="fas fa-rocket mr-2"></i>Setup Inicial
+                </a>
+                <a href="admin-login.html" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login Admin
+                </a>
+                <a href="login.html" class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    <i class="fas fa-user mr-2"></i>Login Aluno
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        async function checkTable(tableName) {
+            try {
+                const response = await fetch(`tables/${tableName}?limit=1`);
+                const data = await response.json();
+                
+                return {
+                    name: tableName,
+                    status: 'ok',
+                    count: data.total || 0,
+                    message: `✅ ${data.total || 0} registros encontrados`
+                };
+            } catch (error) {
+                return {
+                    name: tableName,
+                    status: 'error',
+                    message: `❌ Erro: ${error.message}`
+                };
+            }
+        }
+
+        async function runDiagnostic() {
+            const tables = ['admins', 'students', 'classes', 'surgeries', 'modules'];
+            const results = [];
+
+            for (const table of tables) {
+                const result = await checkTable(table);
+                results.push(result);
+            }
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = result.status === 'ok' 
+                    ? 'bg-green-100 border-l-4 border-green-500 p-4'
+                    : 'bg-red-100 border-l-4 border-red-500 p-4';
+                
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold ${result.status === 'ok' ? 'text-green-800' : 'text-red-800'}">
+                                Tabela: ${result.name}
+                            </h3>
+                            <p class="${result.status === 'ok' ? 'text-green-700' : 'text-red-700'}">
+                                ${result.message}
+                            </p>
+                        </div>
+                        <i class="fas fa-${result.status === 'ok' ? 'check-circle text-green-600' : 'exclamation-triangle text-red-600'} text-3xl"></i>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
+
+            // Add summary
+            const okCount = results.filter(r => r.status === 'ok').length;
+            const totalCount = results.length;
+            
+            const summary = document.createElement('div');
+            summary.className = okCount === totalCount
+                ? 'bg-blue-100 border-l-4 border-blue-500 p-4 mt-4'
+                : 'bg-yellow-100 border-l-4 border-yellow-500 p-4 mt-4';
+            
+            summary.innerHTML = `
+                <h3 class="font-bold ${okCount === totalCount ? 'text-blue-800' : 'text-yellow-800'}">
+                    Resumo: ${okCount}/${totalCount} tabelas OK
+                </h3>
+                <p class="${okCount === totalCount ? 'text-blue-700' : 'text-yellow-700'}">
+                    ${okCount === totalCount 
+                        ? '✅ Sistema funcionando normalmente!' 
+                        : '⚠️ Algumas tabelas precisam ser criadas. Execute o Setup Inicial.'}
+                </p>
+            `;
+            
+            container.appendChild(summary);
+        }
+
+        // Run diagnostic on load
+        runDiagnostic();
+    </script>
+</body>
+</html>

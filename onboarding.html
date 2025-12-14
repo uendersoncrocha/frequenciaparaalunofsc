@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Bem-vindo - Sistema de Cirurgias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .slide-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .slide-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .slide-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .slide-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .slide-content {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-wrapper {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-wrapper i {
+            font-size: 60px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+        }
+
+        .dots {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            width: 30px;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-skip {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .btn-skip:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            opacity: 0.8;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Features list */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+            width: 100%;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .feature-item i {
+            font-size: 24px;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-item span {
+            font-size: 14px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Slide 1: Welcome -->
+    <div class="slide slide-1" id="slide1">
+        <button class="btn-skip" onclick="skipOnboarding()">Pular</button>
+        
+        <div class="slide-content">
+            <div class="icon-wrapper">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <h1>Bem-vindo!</h1>
+            <p>Sistema completo para controle e registro de cirurgias cardiovasculares com perfusão</p>
+            <button class="btn-primary" onclick="nextSlide(2)">
+                Começar <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <div class="dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="swipe-hint">
+            <i class="fas fa-hand-pointer"></i> Deslize para continuar
+        </div>
+    </div>
+
+    <!-- Slide 2: Features -->
+    <div class="slide slide-2 hidden" id="slide2">
+        <button class="btn-skip" onclick="skipOnboarding()">Pular</button>
+        
+        <div class="slide-content">
+            <div class="icon-wrapper">
+                <i class="fas fa-star"></i>
+            </div>
+            <h1>Recursos Completos</h1>
+            <p>Tudo que você precisa em um só lugar</p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Registro de Cirurgias</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Estatísticas</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Controle de Horas</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-file-medical"></i>
+                    <span>Anexos PDF</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="nextSlide(3)">
+                Continuar <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="swipe-hint">
+            <i class="fas fa-hand-pointer"></i> Deslize para continuar
+        </div>
+    </div>
+
+    <!-- Slide 3: Offline -->
+    <div class="slide slide-3 hidden" id="slide3">
+        <button class="btn-skip" onclick="skipOnboarding()">Pular</button>
+        
+        <div class="slide-content">
+            <div class="icon-wrapper">
+                <i class="fas fa-wifi"></i>
+            </div>
+            <h1>Funciona Offline</h1>
+            <p>Acesse seus dados mesmo sem conexão com a internet. Tudo sincroniza automaticamente quando você voltar a ficar online.</p>
+            <button class="btn-primary" onclick="nextSlide(4)">
+                Continuar <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot active"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="swipe-hint">
+            <i class="fas fa-hand-pointer"></i> Deslize para continuar
+        </div>
+    </div>
+
+    <!-- Slide 4: Get Started -->
+    <div class="slide slide-4 hidden" id="slide4">
+        <div class="slide-content">
+            <div class="icon-wrapper">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <h1>Tudo Pronto!</h1>
+            <p>Comece agora a usar o sistema. Faça login com sua matrícula e aproveite todos os recursos.</p>
+            <button class="btn-primary" onclick="finishOnboarding()">
+                Começar a Usar <i class="fas fa-check ml-2"></i>
+            </button>
+        </div>
+
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot active"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Swipe detection
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next slide
+                    if (currentSlide < 4) {
+                        nextSlide(currentSlide + 1);
+                    }
+                } else {
+                    // Swipe right - previous slide
+                    if (currentSlide > 1) {
+                        nextSlide(currentSlide - 1);
+                    }
+                }
+            }
+        }
+
+        function nextSlide(slideNumber) {
+            // Hide current slide
+            document.getElementById(`slide${currentSlide}`).classList.add('hidden');
+            
+            // Show next slide
+            document.getElementById(`slide${slideNumber}`).classList.remove('hidden');
+            
+            // Update current slide
+            currentSlide = slideNumber;
+
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+        }
+
+        function skipOnboarding() {
+            localStorage.setItem('onboardingCompleted', 'true');
+            window.location.href = 'login.html';
+        }
+
+        function finishOnboarding() {
+            localStorage.setItem('onboardingCompleted', 'true');
+            
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate([30, 50, 30]);
+            }
+            
+            // Redirect to login
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 300);
+        }
+
+        // Check if onboarding was already completed
+        if (localStorage.getItem('onboardingCompleted') === 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - Sistema de Presença</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+    <script>
+        // Check admin authentication
+        function isAdminLoggedIn() {
+            const adminSession = localStorage.getItem('adminSession');
+            if (!adminSession) return false;
+            
+            const session = JSON.parse(adminSession);
+            const now = new Date().getTime();
+            
+            // Check if session is still valid (7 days)
+            if (now - session.timestamp > 7 * 24 * 60 * 60 * 1000) {
+                localStorage.removeItem('adminSession');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Protect admin page
+        if (!isAdminLoggedIn()) {
+            window.location.href = 'admin-login.html';
+        }
+
+        // Logout admin
+        function logoutAdmin() {
+            if (confirm('Tem certeza que deseja sair do painel administrativo?')) {
+                localStorage.removeItem('adminSession');
+                window.location.href = 'admin-login.html';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
+                <i class="fas fa-heartbeat mr-3"></i>Painel Administrativo
+            </h1>
+            <p class="text-white text-lg">Gerenciamento de Cirurgias</p>
+            <p id="adminInfo" class="text-white text-sm mt-2 opacity-90">
+                <i class="fas fa-user-shield mr-2"></i>
+                <span id="adminName"></span> - <span id="adminRole"></span>
+            </p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="glass-effect rounded-xl p-4 mb-6">
+            <div class="flex flex-wrap gap-3 justify-between items-center">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="goBack()" class="bg-gray-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-700 transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Voltar</span>
+                    </button>
+                    <a href="index.html" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i>
+                        <span class="hidden sm:inline">Registrar Cirurgia</span>
+                        <span class="sm:hidden">Registrar</span>
+                    </a>
+                    <a href="admin.html" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2">
+                        <i class="fas fa-chart-bar"></i>
+                        <span class="hidden sm:inline">Administração</span>
+                        <span class="sm:hidden">Admin</span>
+                    </a>
+                </div>
+                <button onclick="logoutAdmin()" class="bg-red-500 text-white px-5 py-3 rounded-lg font-semibold hover:bg-red-600 transition shadow-md hover:shadow-lg flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair do Admin</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass-effect rounded-xl p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                Ações Rápidas
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="admin-students.html" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-xl hover:shadow-lg transition-all text-center">
+                    <i class="fas fa-users text-4xl mb-3"></i>
+                    <p class="font-bold text-lg">Gerenciar Alunos</p>
+                    <p class="text-sm text-indigo-100 mt-1">Criar e editar perfusionistas</p>
+                </a>
+                <a href="admin-classes.html" class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-xl hover:shadow-lg transition-all text-center">
+                    <i class="fas fa-chalkboard-teacher text-4xl mb-3"></i>
+                    <p class="font-bold text-lg">Gerenciar Turmas</p>
+                    <p class="text-sm text-blue-100 mt-1">Criar e editar turmas</p>
+                </a>
+                <a href="#validations" onclick="document.getElementById('validations').scrollIntoView({behavior: 'smooth'})" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-xl hover:shadow-lg transition-all text-center">
+                    <i class="fas fa-check-circle text-4xl mb-3"></i>
+                    <p class="font-bold text-lg">Validar Cirurgias</p>
+                    <p class="text-sm text-green-100 mt-1">Aprovar ou rejeitar</p>
+                </a>
+                <a href="cadastrar-alunos.html" class="bg-gradient-to-r from-orange-600 to-red-600 text-white p-6 rounded-xl hover:shadow-lg transition-all text-center">
+                    <i class="fas fa-file-export text-4xl mb-3"></i>
+                    <p class="font-bold text-lg">Exportar Dados</p>
+                    <p class="text-sm text-orange-100 mt-1">Relatórios e backup</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-effect rounded-xl p-6 stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-semibold">Total de Perfusionistas</p>
+                        <p class="text-3xl font-bold text-purple-600" id="totalStudents">0</p>
+                    </div>
+                    <div class="text-4xl text-purple-500">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl p-6 stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-semibold">Cirurgias Hoje</p>
+                        <p class="text-3xl font-bold text-green-600" id="todayAttendance">0</p>
+                    </div>
+                    <div class="text-4xl text-green-500">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl p-6 stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-semibold">Total de Registros</p>
+                        <p class="text-3xl font-bold text-blue-600" id="totalRecords">0</p>
+                    </div>
+                    <div class="text-4xl text-blue-500">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl p-6 stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm font-semibold">Média Mensal</p>
+                        <p class="text-3xl font-bold text-orange-600" id="attendanceRate">0%</p>
+                    </div>
+                    <div class="text-4xl text-orange-500">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="glass-effect rounded-xl p-4 mb-6">
+            <div class="flex flex-wrap gap-3 border-b border-gray-300 pb-3">
+                <button onclick="showTab('dashboard')" id="tabDashboard" class="px-6 py-3 font-semibold rounded-t-lg bg-purple-600 text-white">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </button>
+                <button onclick="showTab('validations')" id="tabValidations" class="px-6 py-3 font-semibold rounded-t-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    <i class="fas fa-check-circle mr-2"></i>Validações
+                    <span id="pendingBadge" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                </button>
+                <button onclick="showTab('surgeries')" id="tabSurgeries" class="px-6 py-3 font-semibold rounded-t-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    <i class="fas fa-table mr-2"></i>Todas Cirurgias
+                </button>
+                <button onclick="showTab('students')" id="tabStudents" class="px-6 py-3 font-semibold rounded-t-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    <i class="fas fa-user-md mr-2"></i>Perfusionistas
+                </button>
+                <button onclick="showTab('attachments')" id="tabAttachments" class="px-6 py-3 font-semibold rounded-t-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    <i class="fas fa-file-medical mr-2"></i>Relatórios
+                    <span id="attachmentsBadge" class="ml-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content">
+
+        <!-- Charts -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-line mr-2"></i>Cirurgias nos Últimos 7 Dias
+                </h3>
+                <div style="height: 300px;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-pie mr-2"></i>Cirurgias por Perfusionista
+                </h3>
+                <div style="height: 300px;">
+                    <canvas id="studentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="glass-effect rounded-xl p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-filter mr-2"></i>Filtros
+            </h3>
+            <div class="grid md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Turma:</label>
+                    <select id="filterClassPeriod" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Todas as turmas</option>
+                        <option value="2024.1">2024.1</option>
+                        <option value="2024.2">2024.2</option>
+                        <option value="2025.1">2025.1</option>
+                        <option value="2025.2">2025.2</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Perfusionista:</label>
+                    <select id="filterStudent" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Todos os perfusionistas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Data Inicial:</label>
+                    <input type="date" id="filterStartDate" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Data Final:</label>
+                    <input type="date" id="filterEndDate" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3">
+                <button onclick="applyFilters()" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                    <i class="fas fa-search mr-2"></i>Aplicar Filtros
+                </button>
+                <button onclick="clearFilters()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    <i class="fas fa-times mr-2"></i>Limpar
+                </button>
+                <button onclick="exportData()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                    <i class="fas fa-download mr-2"></i>Exportar CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Surgery Table -->
+        <div class="glass-effect rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-table mr-2"></i>Registros de Cirurgias
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-purple-600 text-white">
+                        <tr>
+                            <th class="px-3 py-3 text-left rounded-tl-lg">Data</th>
+                            <th class="px-3 py-3 text-left">Turma</th>
+                            <th class="px-3 py-3 text-left">Perfusionista Principal</th>
+                            <th class="px-3 py-3 text-left">Perfusionista Auxiliar</th>
+                            <th class="px-3 py-3 text-left">Cirurgião</th>
+                            <th class="px-3 py-3 text-left">Tipo Cirurgia</th>
+                            <th class="px-3 py-3 text-left">Início</th>
+                            <th class="px-3 py-3 text-left">Término</th>
+                            <th class="px-3 py-3 text-left">Duração</th>
+                            <th class="px-3 py-3 text-left">CEC</th>
+                            <th class="px-3 py-3 text-left">Pinça</th>
+                            <th class="px-3 py-3 text-center">Ficha CEC</th>
+                            <th class="px-3 py-3 text-center rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody" class="divide-y divide-gray-200">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-between items-center">
+                <div class="text-gray-600" id="recordsInfo">Mostrando 0 de 0 registros</div>
+                <div class="flex gap-2" id="pagination">
+                    <!-- Pagination buttons will be added here -->
+                </div>
+            </div>
+        </div>
+
+        </div>
+        <!-- End Dashboard Tab -->
+
+        <!-- Validations Tab -->
+        <div id="validationsTab" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-clipboard-check mr-2 text-orange-600"></i>Validações Pendentes
+                </h3>
+                
+                <!-- Filter Options -->
+                <div class="mb-6 flex flex-wrap gap-3">
+                    <button onclick="filterValidations('all')" id="filterAll" class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold">
+                        Todos
+                    </button>
+                    <button onclick="filterValidations('surgeries')" id="filterSurgeries" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+                        Cirurgias
+                    </button>
+                    <button onclick="filterValidations('modules')" id="filterModules" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+                        Módulos
+                    </button>
+                </div>
+
+                <!-- Pending Items List -->
+                <div id="pendingValidationsList" class="space-y-4">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyValidations" class="hidden text-center py-12">
+                    <i class="fas fa-check-double text-6xl text-green-500 mb-4"></i>
+                    <h4 class="text-xl font-bold text-gray-800 mb-2">Tudo Validado!</h4>
+                    <p class="text-gray-600">Não há registros pendentes de validação no momento.</p>
+                </div>
+            </div>
+        </div>
+        <!-- End Validations Tab -->
+
+        <!-- Surgeries Tab -->
+        <div id="surgeriesTab" class="tab-content hidden">
+
+        </div>
+        <!-- End Surgeries Tab -->
+
+        <!-- Students Tab -->
+        <div id="studentsTab" class="tab-content hidden">
+        
+        <!-- Student Management -->
+        <div class="glass-effect rounded-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-user-md mr-2"></i>Gerenciar Perfusionistas
+                </h3>
+                <button onclick="showAddStudentForm()" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                    <i class="fas fa-plus mr-2"></i>Adicionar Novo Perfusionista
+                </button>
+            </div>
+            
+            <!-- Filter by class period -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Filtrar por Turma:</label>
+                <select id="studentListFilter" class="w-full md:w-64 p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                    <option value="">Todas as turmas</option>
+                    <option value="2024.1">2024.1</option>
+                    <option value="2024.2">2024.2</option>
+                    <option value="2025.1">2025.1</option>
+                    <option value="2025.2">2025.2</option>
+                </select>
+            </div>
+            
+            <div id="studentList" class="mt-6 grid md:grid-cols-2 gap-4">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass-effect rounded-xl p-8 max-w-2xl mx-4 w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-user-md mr-2"></i>Adicionar Novo Perfusionista
+            </h3>
+            <form id="addStudentForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Nome Completo:</label>
+                    <input type="text" id="newStudentName" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Matrícula:</label>
+                    <input type="text" id="newStudentRegistration" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Email:</label>
+                    <input type="email" id="newStudentEmail" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Turma:</label>
+                    <select id="newStudentClassPeriod" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Selecione a turma</option>
+                        <option value="2024.1">2024.1</option>
+                        <option value="2024.2">2024.2</option>
+                        <option value="2025.1">2025.1</option>
+                        <option value="2025.2">2025.2</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition flex-1">
+                        <i class="fas fa-save mr-2"></i>Salvar
+                    </button>
+                    <button type="button" onclick="closeAddStudentModal()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition flex-1">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    </div>
+    <!-- End Students Tab -->
+
+    <!-- Attachments Tab -->
+    <div id="attachmentsTab" class="tab-content hidden">
+        <div class="glass-effect rounded-xl p-6 mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-file-medical mr-2 text-blue-600"></i>Relatórios de Cirurgias
+            </h3>
+            
+            <!-- Filter Options -->
+            <div class="mb-6 grid md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Filtrar por Turma:</label>
+                    <select id="attachmentClassFilter" onchange="filterAttachments()" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Todas as turmas</option>
+                        <option value="2024.1">2024.1</option>
+                        <option value="2024.2">2024.2</option>
+                        <option value="2025.1">2025.1</option>
+                        <option value="2025.2">2025.2</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Filtrar por Aluno:</label>
+                    <select id="attachmentStudentFilter" onchange="filterAttachments()" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Todos os alunos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Status:</label>
+                    <select id="attachmentStatusFilter" onchange="filterAttachments()" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <option value="">Todos</option>
+                        <option value="validated">Validados</option>
+                        <option value="pending">Pendentes</option>
+                        <option value="rejected">Rejeitados</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Buscar:</label>
+                    <input type="text" id="attachmentSearchInput" oninput="filterAttachments()" placeholder="Buscar..." class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="grid md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-sm mb-1">Total Relatórios</p>
+                            <p class="text-3xl font-bold" id="totalAttachments">0</p>
+                        </div>
+                        <i class="fas fa-file-medical text-4xl opacity-30"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-sm mb-1">Validados</p>
+                            <p class="text-3xl font-bold" id="validatedAttachments">0</p>
+                        </div>
+                        <i class="fas fa-check-circle text-4xl opacity-30"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-yellow-100 text-sm mb-1">Pendentes</p>
+                            <p class="text-3xl font-bold" id="pendingAttachments">0</p>
+                        </div>
+                        <i class="fas fa-clock text-4xl opacity-30"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-red-100 text-sm mb-1">Rejeitados</p>
+                            <p class="text-3xl font-bold" id="rejectedAttachments">0</p>
+                        </div>
+                        <i class="fas fa-times-circle text-4xl opacity-30"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments Grid -->
+            <div id="attachmentsList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyAttachments" class="hidden text-center py-12">
+                <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
+                <h4 class="text-xl font-bold text-gray-800 mb-2">Nenhum Relatório Encontrado</h4>
+                <p class="text-gray-600">Não há relatórios que correspondam aos filtros selecionados.</p>
+            </div>
+        </div>
+    </div>
+    <!-- End Attachments Tab -->
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-2xl mx-4 w-full shadow-2xl">
+            <h3 class="text-2xl font-bold text-red-600 mb-6">
+                <i class="fas fa-times-circle mr-2"></i>Rejeitar Registro
+            </h3>
+            
+            <div class="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                <p class="text-sm text-yellow-800">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Atenção:</strong> Ao rejeitar este registro, você deve fornecer uma explicação clara para o aluno.
+                </p>
+            </div>
+
+            <!-- Record Info -->
+            <div id="rejectionRecordInfo" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Rejection Reason -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-comment-alt mr-2"></i>Motivo da Rejeição:
+                </label>
+                <textarea id="rejectionReason" rows="4" required class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:outline-none" placeholder="Explique o motivo da rejeição..."></textarea>
+                <p class="text-xs text-gray-500 mt-2">Este texto será exibido para o aluno.</p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button onclick="confirmRejection()" class="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition">
+                    <i class="fas fa-times-circle mr-2"></i>Confirmar Rejeição
+                </button>
+                <button onclick="closeRejectionModal()" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    <i class="fas fa-undo mr-2"></i>Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Module Hours Modal -->
+    <div id="editHoursModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 w-full shadow-2xl">
+            <h3 class="text-2xl font-bold text-purple-600 mb-6">
+                <i class="fas fa-clock mr-2"></i>Validar Horas do Módulo
+            </h3>
+
+            <!-- Module Info -->
+            <div id="editHoursModuleInfo" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Hours Input -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-hourglass-half mr-2"></i>Horas do Módulo Prático:
+                </label>
+                <input type="number" id="validatedHours" min="0.5" step="0.5" required class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Ex: 4">
+                <p class="text-xs text-gray-500 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Estas horas serão abatidas da meta de 800h do aluno
+                </p>
+            </div>
+
+            <!-- Optional Notes -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">
+                    Observações (opcional):
+                </label>
+                <textarea id="validationNotes" rows="2" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Observações sobre a validação..."></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+                <button onclick="confirmModuleValidation()" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                    <i class="fas fa-check-circle mr-2"></i>Validar
+                </button>
+                <button onclick="closeEditHoursModal()" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Native-like Animations -->
+    <link rel="stylesheet" href="css/native-animations.css">
+    
+    <!-- Core Scripts -->
+    <script src="js/api-config.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/admin-validations.js"></script>
+    <script src="js/admin-attachments.js"></script>
+    <script src="js/admin.js"></script>
+    
+    <!-- Native-like Features -->
+    <script src="js/native-gestures.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/mobile-enhancements.js"></script>
+    <script src="js/install-app.js"></script>
+    <script>
+        // Display admin info
+        const adminSession = localStorage.getItem('adminSession');
+        if (adminSession) {
+            const session = JSON.parse(adminSession);
+            const adminNameEl = document.getElementById('adminName');
+            const adminRoleEl = document.getElementById('adminRole');
+            
+            if (adminNameEl && session.name) {
+                adminNameEl.textContent = session.name;
+            }
+            if (adminRoleEl && session.role) {
+                adminRoleEl.textContent = session.role;
+            }
+        }
+    </script>
+</body>
+</html>

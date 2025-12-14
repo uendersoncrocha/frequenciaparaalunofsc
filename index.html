@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Presença - Estágio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        .attendance-card {
+            transition: all 0.3s ease;
+        }
+        .attendance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
+                <i class="fas fa-heartbeat mr-3"></i>Sistema de Controle de Cirurgias
+            </h1>
+            <p class="text-white text-lg">Registro de Procedimentos Cirúrgicos</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="glass-effect rounded-xl p-4 mb-6">
+            <div class="flex flex-wrap gap-3 justify-between items-center">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="goBack()" class="bg-gray-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-700 transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Voltar</span>
+                    </button>
+                    <a href="index.html" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold">
+                        <i class="fas fa-plus-circle mr-2"></i>Registrar Cirurgia
+                    </a>
+                    <button id="installButtonNav" onclick="handleInstallClick()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition shadow-md hover:shadow-lg flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        <span>Instalar App</span>
+                    </button>
+                    <a href="student-admin.html" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition">
+                        <i class="fas fa-user-cog mr-2"></i>Administração
+                    </a>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button onclick="toggleShortcutsHelp()" class="text-gray-700 bg-white px-3 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition" title="Ver atalhos do teclado">
+                        <i class="fas fa-keyboard"></i>
+                    </button>
+                    <a href="student-profile.html" class="text-gray-700 font-semibold bg-white px-3 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition flex items-center gap-2" title="Atalho: Alt+P">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName"></span>
+                    </a>
+                    <button onclick="confirmLogout()" class="bg-red-500 text-white px-5 py-3 rounded-lg font-semibold hover:bg-red-600 transition shadow-md hover:shadow-lg" title="Atalho: Alt+L">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Help -->
+        <div id="shortcutsHelp" class="hidden glass-effect rounded-xl p-4 mb-6 max-w-4xl mx-auto">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-800">
+                    <i class="fas fa-keyboard mr-2 text-purple-600"></i>
+                    Atalhos do Teclado
+                </h3>
+                <button onclick="toggleShortcutsHelp()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                <div class="flex items-center gap-2 bg-white p-2 rounded">
+                    <kbd class="px-2 py-1 bg-gray-200 rounded text-xs font-mono">Alt+B</kbd>
+                    <span class="text-gray-700">Voltar</span>
+                </div>
+                <div class="flex items-center gap-2 bg-white p-2 rounded">
+                    <kbd class="px-2 py-1 bg-gray-200 rounded text-xs font-mono">Alt+L</kbd>
+                    <span class="text-gray-700">Logout</span>
+                </div>
+                <div class="flex items-center gap-2 bg-white p-2 rounded">
+                    <kbd class="px-2 py-1 bg-gray-200 rounded text-xs font-mono">Alt+S</kbd>
+                    <span class="text-gray-700">Salvar Registro</span>
+                </div>
+                <div class="flex items-center gap-2 bg-white p-2 rounded">
+                    <kbd class="px-2 py-1 bg-gray-200 rounded text-xs font-mono">Alt+P</kbd>
+                    <span class="text-gray-700">Perfil</span>
+                </div>
+                <div class="flex items-center gap-2 bg-white p-2 rounded">
+                    <kbd class="px-2 py-1 bg-gray-200 rounded text-xs font-mono">Alt+R</kbd>
+                    <span class="text-gray-700">Registrar Cirurgia</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="glass-effect rounded-xl p-6 md:p-8 max-w-4xl mx-auto">
+            <!-- Student Header Stats (Always visible when logged in) -->
+            <div id="studentStatsHeader" class="hidden mb-6">
+                <!-- Student Name Banner -->
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-white/20 rounded-full p-4">
+                                <i class="fas fa-user-md text-3xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold" id="headerStudentName">Nome do Aluno</h2>
+                                <p class="text-purple-100" id="headerStudentInfo">Turma • Matrícula</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a href="student-profile.html" class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2">
+                                <i class="fas fa-user-cog"></i>
+                                <span class="hidden sm:inline">Meu Perfil</span>
+                            </a>
+                            <div class="text-right hidden md:block">
+                                <p class="text-sm text-purple-100">Bem-vindo(a)!</p>
+                                <p class="text-lg font-semibold">🎓 Perfusionista</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- Total Surgeries -->
+                    <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-semibold">Total de Cirurgias</p>
+                                <p class="text-3xl font-bold text-blue-600" id="totalSurgeriesCount">0</p>
+                                <p class="text-xs text-gray-500 mt-1">Participações</p>
+                            </div>
+                            <div class="bg-blue-100 rounded-full p-3">
+                                <i class="fas fa-heartbeat text-2xl text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Responsible Surgeries (for title) -->
+                    <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-semibold">Como Responsável</p>
+                                <p class="text-3xl font-bold text-green-600" id="responsibleCount">0</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-trophy mr-1"></i>Para o Título
+                                </p>
+                            </div>
+                            <div class="bg-green-100 rounded-full p-3">
+                                <i class="fas fa-star text-2xl text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Hours -->
+                    <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-semibold">Horas Totais</p>
+                                <p class="text-3xl font-bold text-purple-600" id="totalHours">0h</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span id="remainingHours">800h restantes</span>
+                                </p>
+                            </div>
+                            <div class="bg-purple-100 rounded-full p-3">
+                                <i class="fas fa-clock text-2xl text-purple-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar to 800 hours -->
+                <div class="bg-white rounded-xl p-4 shadow-md mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm font-semibold text-gray-700">
+                            <i class="fas fa-chart-line mr-2"></i>Progresso para 800 Horas
+                        </p>
+                        <p class="text-sm font-bold text-purple-600" id="progressPercentage">0%</p>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 text-center">
+                        <span id="hoursProgress">0 de 800 horas completadas</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Class Period and Student Selection removed - student already has class_period in registration -->
+
+            <!-- Surgery Form -->
+            <div id="attendanceForm" class="hidden">
+                <!-- Record Type Selection -->
+                <div class="mb-6 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-200">
+                    <h3 class="text-lg font-bold text-indigo-900 mb-4">
+                        <i class="fas fa-clipboard-list mr-2"></i>Tipo de Registro
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="showSurgeryForm()" id="btnSurgery" class="p-6 bg-white border-3 border-blue-500 rounded-xl hover:shadow-lg transition">
+                            <div class="text-center">
+                                <i class="fas fa-heartbeat text-4xl text-blue-600 mb-3"></i>
+                                <h4 class="text-lg font-bold text-gray-800 mb-2">Cirurgia</h4>
+                                <p class="text-sm text-gray-600">Registrar participação em cirurgia cardiovascular</p>
+                            </div>
+                        </button>
+                        <button onclick="showModuleForm()" id="btnModule" class="p-6 bg-white border-2 border-gray-300 rounded-xl hover:shadow-lg transition hover:border-green-500">
+                            <div class="text-center">
+                                <i class="fas fa-book-reader text-4xl text-green-600 mb-3"></i>
+                                <h4 class="text-lg font-bold text-gray-800 mb-2">Módulo de Aula</h4>
+                                <p class="text-sm text-gray-600">Registrar participação em aula teórica ou prática</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Today's Status -->
+                <div id="todayStatus" class="mb-6 p-6 rounded-lg"></div>
+
+                <!-- Surgery Fields -->
+                <div id="surgeryFormFields" class="mb-6 p-6 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <h3 class="text-lg font-bold text-blue-900 mb-4">
+                        <i class="fas fa-notes-medical mr-2"></i>Dados da Cirurgia
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Surgery Date -->
+                        <div class="col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-calendar-day mr-1"></i>Data da Cirurgia: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="date" id="surgeryDate" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Selecione a data em que a cirurgia ocorreu
+                            </p>
+                        </div>
+
+                        <!-- Main Perfusionist Name -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-user-md mr-1"></i>Perfusionista Principal:
+                            </label>
+                            <input type="text" id="perfusionistMain" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Nome do perfusionista principal...">
+                        </div>
+
+                        <!-- Auxiliary Perfusionist Name -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-user-nurse mr-1"></i>Perfusionista Auxiliar:
+                            </label>
+                            <input type="text" id="perfusionistAuxiliary" readonly class="w-full p-3 border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" placeholder="Seu nome...">
+                        </div>
+
+                        <!-- Surgeon Name -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-user-md mr-1"></i>Nome do Cirurgião:
+                            </label>
+                            <input type="text" id="surgeonName" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Dr(a)...">
+                        </div>
+
+                        <!-- Surgery Type -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-procedures mr-1"></i>Tipo de Cirurgia:
+                            </label>
+                            <select id="surgeryType" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                <option value="">Selecione o tipo</option>
+                                <option value="Revascularização do Miocárdio">Revascularização do Miocárdio</option>
+                                <option value="Troca Valvar Aórtica">Troca Valvar Aórtica</option>
+                                <option value="Troca Valvar Mitral">Troca Valvar Mitral</option>
+                                <option value="Correção de CIA">Correção de CIA</option>
+                                <option value="Correção de CIV">Correção de CIV</option>
+                                <option value="Transplante Cardíaco">Transplante Cardíaco</option>
+                                <option value="Outra">Outra</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Empty div for grid alignment -->
+                        <div></div>
+
+                        <!-- CEC Time -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-clock mr-1"></i>Tempo de CEC (minutos):
+                            </label>
+                            <input type="number" id="cecTime" min="0" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Ex: 120">
+                        </div>
+
+                        <!-- Clamp Time -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-compress mr-1"></i>Tempo de Pinça (minutos):
+                            </label>
+                            <input type="number" id="clampTime" min="0" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Ex: 90">
+                        </div>
+
+                        <!-- Total Surgery Time -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-hourglass-half mr-1"></i>Tempo Total de Cirurgia (minutos):
+                            </label>
+                            <input type="number" id="totalSurgeryTime" min="0" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="Ex: 180">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Tempo total desde o início até o fim da cirurgia
+                            </p>
+                        </div>
+
+                        <!-- Was Responsible Checkbox -->
+                        <div class="col-span-2">
+                            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-lg p-4">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" id="wasResponsible" class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-1">
+                                    <div class="flex-1">
+                                        <p class="font-bold text-gray-800 mb-1">
+                                            <i class="fas fa-trophy text-yellow-600 mr-2"></i>Fui o Responsável pela Perfusão
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <strong>Marque esta opção</strong> se você foi o perfusionista responsável pela cirurgia.
+                                        </p>
+                                        <div class="mt-2 text-xs text-gray-600 space-y-1">
+                                            <p>✅ <strong>Como Responsável:</strong> Conta para obtenção do título + contabiliza horas</p>
+                                            <p>📋 <strong>Como Auxiliar:</strong> Apenas contabiliza as horas de experiência</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- CEC Sheet - OBRIGATÓRIO -->
+                        <div class="col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-file-medical mr-1"></i>Ficha de CEC <span class="text-red-600">*</span> (obrigatório):
+                            </label>
+                            <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 hover:border-blue-500 transition bg-blue-50">
+                                <input type="file" id="cecSheet" accept="image/*,.pdf" required class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                                <p class="text-xs text-blue-600 mt-2 font-semibold">
+                                    <i class="fas fa-info-circle mr-1"></i>Anexe a ficha de CEC preenchida (PDF, JPG, PNG - máx. 5MB)
+                                </p>
+                                <div id="cecSheetPreview" class="mt-3 hidden">
+                                    <div class="flex items-center gap-2 text-sm text-green-600">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span id="cecSheetName"></span>
+                                        <button type="button" onclick="clearCecSheet()" class="text-red-600 hover:text-red-800 ml-2">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Surgery Report - OBRIGATÓRIO -->
+                        <div class="col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-paperclip mr-1"></i>Relatório da Cirurgia <span class="text-red-600">*</span> (obrigatório):
+                            </label>
+                            <div class="border-2 border-dashed border-red-300 rounded-lg p-4 hover:border-red-500 transition bg-red-50">
+                                <input type="file" id="cecAttachment" accept="image/*,.pdf" required class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-100 file:text-red-700 hover:file:bg-red-200">
+                                <p class="text-xs text-red-600 mt-2 font-semibold">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Anexe o relatório da cirurgia (PDF, JPG, PNG - máx. 5MB)
+                                </p>
+                                <div id="attachmentPreview" class="mt-3 hidden">
+                                    <div class="flex items-center gap-2 text-sm text-green-600">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span id="attachmentName"></span>
+                                        <button type="button" onclick="clearAttachment()" class="text-red-600 hover:text-red-800 ml-2">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mb-6">
+                    <button id="saveRecordBtn" onclick="saveSurgeryRecord()" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition hover:from-blue-600 hover:to-blue-700">
+                        <i class="fas fa-save mr-2"></i>Salvar Registro
+                    </button>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-semibold mb-2">
+                        <i class="fas fa-comment-medical mr-2"></i>Observações (opcional):
+                    </label>
+                    <textarea id="notesInput" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" rows="3" placeholder="Adicione observações sobre o procedimento..."></textarea>
+                </div>
+
+                <!-- Module Fields (Hidden by default) -->
+                <div id="moduleFormFields" class="hidden mb-6 p-6 bg-green-50 rounded-lg border-2 border-green-200">
+                    <h3 class="text-lg font-bold text-green-900 mb-4">
+                        <i class="fas fa-book-reader mr-2"></i>Dados do Módulo de Aula
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Module Date -->
+                        <div class="col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-calendar-day mr-1"></i>Data da Aula: <span class="text-red-600">*</span>
+                            </label>
+                            <input type="date" id="moduleDate" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Selecione a data em que a aula ocorreu
+                            </p>
+                        </div>
+
+                        <!-- Module Type -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-graduation-cap mr-1"></i>Tipo de Módulo:
+                            </label>
+                            <select id="moduleType" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                                <option value="">Selecione o tipo</option>
+                                <option value="teorico">🎓 Teórico (Não abate das 800h)</option>
+                                <option value="pratico">⚗️ Prático (Abate das 800h)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Aulas práticas reduzem a meta de 800h
+                            </p>
+                        </div>
+
+                        <!-- Module Name -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-tag mr-1"></i>Nome/Descrição do Módulo:
+                            </label>
+                            <input type="text" id="moduleName" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" placeholder="Ex: Fisiologia Cardíaca">
+                        </div>
+
+                        <!-- Duration -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-clock mr-1"></i>Duração (horas):
+                            </label>
+                            <input type="number" id="moduleDuration" min="0.5" step="0.5" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" placeholder="Ex: 2">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Use 0.5 para 30 minutos
+                            </p>
+                        </div>
+
+                        <!-- Instructor -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-chalkboard-teacher mr-1"></i>Instrutor/Professor:
+                            </label>
+                            <input type="text" id="moduleInstructor" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" placeholder="Nome do instrutor">
+                        </div>
+
+                        <!-- Module Notes -->
+                        <div class="col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-comment-medical mr-2"></i>Observações (opcional):
+                            </label>
+                            <textarea id="moduleNotes" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" rows="3" placeholder="Adicione observações sobre o módulo..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Register Module Button -->
+                    <div class="mt-6">
+                        <button onclick="registerModule()" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition hover:from-green-600 hover:to-emerald-600">
+                            <i class="fas fa-save mr-2"></i>Salvar Aula
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Surgeries -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-history mr-2"></i>Meus Registros Recentes
+                    </h3>
+                    <div id="recentAttendance" class="space-y-3">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="glass-effect rounded-xl p-8 max-w-md mx-4 text-center">
+            <div class="text-green-500 text-6xl mb-4">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2" id="modalTitle">Sucesso!</h3>
+            <p class="text-gray-600 mb-4" id="modalMessage"></p>
+            <button onclick="closeModal()" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Native-like Animations -->
+    <link rel="stylesheet" href="css/native-animations.css">
+    
+    <!-- Core Scripts -->
+    <script src="js/api-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/student-stats.js"></script>
+    <script src="js/modules.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- Native-like Features -->
+    <script src="js/native-gestures.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/mobile-enhancements.js"></script>
+    <script src="js/install-app.js"></script>
+    <script>
+        // Install button handler
+        function handleInstallClick() {
+            // Redirecionar para página de download/instalação
+            window.location.href = 'download-app.html';
+        }
+        
+        // Protect page on load
+        protectPage();
+        
+        // Display logged in user info
+        const loggedUser = getLoggedInUser();
+        if (loggedUser) {
+            document.getElementById('userName').textContent = loggedUser.name;
+        }
+        
+        // Toggle shortcuts help
+        function toggleShortcutsHelp() {
+            const help = document.getElementById('shortcutsHelp');
+            if (help) {
+                help.classList.toggle('hidden');
+            }
+        }
+        
+        // Initialize FAB (Floating Action Button) after page loads
+        window.addEventListener('load', () => {
+            // Create FAB with quick actions
+            window.fab = new FloatingActionButton({
+                icon: 'fa-plus',
+                position: 'bottom-right',
+                color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                actions: [
+                    {
+                        icon: 'fa-heart-pulse',
+                        onClick: () => {
+                            // Scroll to surgery registration form
+                            document.querySelector('#surgeryForm')?.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start' 
+                            });
+                            if (window.showInfo) {
+                                window.showInfo('Role para baixo para registrar cirurgia');
+                            }
+                        }
+                    },
+                    {
+                        icon: 'fa-book',
+                        onClick: () => {
+                            // Go to modules page
+                            window.location.href = 'index.html#modules';
+                            if (window.showInfo) {
+                                window.showInfo('Seção de módulos');
+                            }
+                        }
+                    },
+                    {
+                        icon: 'fa-chart-line',
+                        onClick: () => {
+                            // Scroll to statistics
+                            document.querySelector('#studentStatsHeader')?.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start' 
+                            });
+                            if (window.showInfo) {
+                                window.showInfo('Suas estatísticas');
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Matrículas - Sistema de Cirurgias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-600 to-blue-600 min-h-screen p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-2xl p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-id-card text-purple-600 mr-3"></i>
+                Gerador de Matrículas
+            </h1>
+            <p class="text-gray-600">Sistema de Controle de Cirurgias Cardiovasculares</p>
+        </div>
+
+        <!-- Action Button -->
+        <div class="bg-white rounded-xl shadow-2xl p-6 mb-6">
+            <button 
+                onclick="gerarTodasMatriculas()" 
+                id="btnGerar"
+                class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl">
+                <i class="fas fa-magic mr-2"></i>
+                GERAR MATRÍCULAS PARA TODOS OS 25 PERFUSIONISTAS
+            </button>
+            <p class="text-center text-gray-600 mt-3 text-sm">
+                <i class="fas fa-info-circle mr-1"></i>
+                Isso irá criar matrículas únicas para cada perfusionista
+            </p>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden bg-yellow-100 border-2 border-yellow-400 rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mr-3"></div>
+                <span class="text-yellow-800 font-bold">Processando... Aguarde!</span>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        // Hash simples para senha
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // Gerar matrícula no formato AAASS###
+        function gerarMatricula(turma, numero) {
+            const ano = turma.split('.')[0];
+            const semestre = turma.split('.')[1];
+            const num = String(numero).padStart(3, '0');
+            return `${ano}${semestre}${num}`;
+        }
+
+        // Definição dos perfusionistas por turma (ordem alfabética)
+        const perfusionistasPorTurma = {
+            '2024.1': [
+                'Ana Clara',
+                'Beatriz',
+                'Gabriela',
+                'Giovana',
+                'Jaiane',
+                'Rafaela',
+                'Thaylane'
+            ],
+            '2024.2': [
+                'Anthony',
+                'Driele',
+                'Emille',
+                'Israel'
+            ],
+            '2025.1': [
+                'Ana Beatriz',
+                'Giovana',
+                'Gislayne',
+                'Marimar',
+                'Milena'
+            ],
+            '2025.2': [
+                'Amanda Marques',
+                'Amanda Moreira',
+                'Claudia',
+                'Maria Eduarda',
+                'Nicoly',
+                'Rafael',
+                'Sthefany',
+                'Vinícius',
+                'Vitória'
+            ]
+        };
+
+        async function gerarTodasMatriculas() {
+            const btnGerar = document.getElementById('btnGerar');
+            const loading = document.getElementById('loading');
+            const resultado = document.getElementById('resultado');
+
+            // Desabilitar botão
+            btnGerar.disabled = true;
+            btnGerar.classList.add('opacity-50', 'cursor-not-allowed');
+            loading.classList.remove('hidden');
+            resultado.innerHTML = '';
+
+            try {
+                // Buscar todos os alunos do banco
+                console.log('Buscando perfusionistas do banco...');
+                const response = await fetch('tables/students?limit=100');
+                const data = await response.json();
+                const todosAlunos = data.data;
+
+                console.log(`Encontrados ${todosAlunos.length} perfusionistas no banco`);
+
+                let html = '';
+                let totalAtualizados = 0;
+                let totalErros = 0;
+
+                // Processar cada turma
+                for (const [turma, nomesPredefinidos] of Object.entries(perfusionistasPorTurma)) {
+                    html += `<div class="bg-white rounded-xl shadow-2xl p-6 mb-6">`;
+                    html += `<h2 class="text-2xl font-bold text-purple-600 mb-4">
+                        <i class="fas fa-users mr-2"></i>Turma ${turma}
+                    </h2>`;
+                    html += `<div class="overflow-x-auto">`;
+                    html += `<table class="w-full text-sm">`;
+                    html += `<thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3 text-left">#</th>
+                            <th class="p-3 text-left">Nome</th>
+                            <th class="p-3 text-left">Matrícula</th>
+                            <th class="p-3 text-left">Senha Padrão</th>
+                            <th class="p-3 text-center">Status</th>
+                        </tr>
+                    </thead>`;
+                    html += `<tbody>`;
+
+                    // Processar cada perfusionista da turma
+                    for (let i = 0; i < nomesPredefinidos.length; i++) {
+                        const nomePredefinido = nomesPredefinidos[i];
+                        const matricula = gerarMatricula(turma, i + 1);
+                        const senha = matricula;
+                        const senhaHash = simpleHash(senha);
+
+                        // Buscar o perfusionista no banco pelo nome e turma
+                        const alunoEncontrado = todosAlunos.find(a => 
+                            a.name.toLowerCase().trim() === nomePredefinido.toLowerCase().trim() && 
+                            a.class_period === turma
+                        );
+
+                        if (alunoEncontrado) {
+                            try {
+                                // Atualizar no banco
+                                const updateResponse = await fetch(`tables/students/${alunoEncontrado.id}`, {
+                                    method: 'PUT',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({
+                                        ...alunoEncontrado,
+                                        registration: matricula,
+                                        password: senhaHash
+                                    })
+                                });
+
+                                if (updateResponse.ok) {
+                                    html += `<tr class="border-t hover:bg-green-50">
+                                        <td class="p-3 font-bold text-gray-600">${i + 1}</td>
+                                        <td class="p-3 font-semibold">${nomePredefinido}</td>
+                                        <td class="p-3">
+                                            <span class="font-mono bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold">
+                                                ${matricula}
+                                            </span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span class="font-mono bg-green-100 text-green-800 px-3 py-1 rounded font-bold">
+                                                ${senha}
+                                            </span>
+                                        </td>
+                                        <td class="p-3 text-center">
+                                            <span class="text-green-600 font-bold">
+                                                <i class="fas fa-check-circle mr-1"></i>Atualizado
+                                            </span>
+                                        </td>
+                                    </tr>`;
+                                    totalAtualizados++;
+                                    console.log(`✓ ${nomePredefinido} → ${matricula}`);
+                                } else {
+                                    throw new Error('Erro na resposta');
+                                }
+                            } catch (error) {
+                                html += `<tr class="border-t hover:bg-red-50">
+                                    <td class="p-3 font-bold text-gray-600">${i + 1}</td>
+                                    <td class="p-3">${nomePredefinido}</td>
+                                    <td class="p-3 font-mono text-gray-500">${matricula}</td>
+                                    <td class="p-3 font-mono text-gray-500">${senha}</td>
+                                    <td class="p-3 text-center">
+                                        <span class="text-red-600 font-bold">
+                                            <i class="fas fa-times-circle mr-1"></i>Erro
+                                        </span>
+                                    </td>
+                                </tr>`;
+                                totalErros++;
+                                console.error(`✗ Erro ao atualizar ${nomePredefinido}`);
+                            }
+                        } else {
+                            html += `<tr class="border-t bg-yellow-50">
+                                <td class="p-3 font-bold text-gray-600">${i + 1}</td>
+                                <td class="p-3">${nomePredefinido}</td>
+                                <td class="p-3 font-mono text-gray-500">${matricula}</td>
+                                <td class="p-3 font-mono text-gray-500">${senha}</td>
+                                <td class="p-3 text-center">
+                                    <span class="text-orange-600 font-bold">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>Não encontrado
+                                    </span>
+                                </td>
+                            </tr>`;
+                            totalErros++;
+                            console.warn(`⚠ ${nomePredefinido} não encontrado no banco`);
+                        }
+                    }
+
+                    html += `</tbody></table></div></div>`;
+                }
+
+                // Resumo final
+                html += `<div class="bg-gradient-to-r ${totalErros === 0 ? 'from-green-500 to-green-600' : 'from-yellow-500 to-orange-500'} rounded-xl shadow-2xl p-6 text-white">
+                    <h3 class="text-2xl font-bold mb-4">
+                        <i class="fas fa-chart-pie mr-2"></i>Resumo da Operação
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <div class="text-3xl font-bold">${totalAtualizados}</div>
+                            <div class="text-sm">Atualizados</div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <div class="text-3xl font-bold">${totalErros}</div>
+                            <div class="text-sm">Erros</div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <div class="text-3xl font-bold">25</div>
+                            <div class="text-sm">Total</div>
+                        </div>
+                    </div>
+                    ${totalErros === 0 ? 
+                        '<p class="mt-4 text-center font-bold"><i class="fas fa-check-circle mr-2"></i>Todas as matrículas foram geradas com sucesso!</p>' :
+                        '<p class="mt-4 text-center font-bold"><i class="fas fa-exclamation-triangle mr-2"></i>Alguns perfusionistas não foram atualizados. Verifique o status acima.</p>'
+                    }
+                </div>`;
+
+                // Instruções finais
+                html += `<div class="bg-blue-100 border-2 border-blue-400 rounded-xl p-6 mt-6">
+                    <h4 class="text-xl font-bold text-blue-900 mb-3">
+                        <i class="fas fa-info-circle mr-2"></i>Próximos Passos
+                    </h4>
+                    <ol class="list-decimal list-inside space-y-2 text-blue-800">
+                        <li>Copie as credenciais da tabela acima</li>
+                        <li>Distribua para cada perfusionista (email, WhatsApp, etc)</li>
+                        <li>Teste fazendo login com uma das matrículas</li>
+                        <li>Oriente os perfusionistas a usar: Login = Matrícula, Senha = Matrícula</li>
+                    </ol>
+                </div>`;
+
+                resultado.innerHTML = html;
+
+            } catch (error) {
+                console.error('Erro geral:', error);
+                resultado.innerHTML = `
+                    <div class="bg-red-100 border-2 border-red-400 rounded-xl p-6">
+                        <h3 class="text-xl font-bold text-red-900 mb-2">
+                            <i class="fas fa-exclamation-circle mr-2"></i>Erro ao Processar
+                        </h3>
+                        <p class="text-red-800">${error.message}</p>
+                        <p class="text-red-700 mt-2">Verifique:</p>
+                        <ul class="list-disc list-inside text-red-700">
+                            <li>Conexão com o banco de dados</li>
+                            <li>Todos os 25 perfusionistas estão cadastrados</li>
+                            <li>Campo class_period está correto</li>
+                        </ul>
+                    </div>`;
+            } finally {
+                loading.classList.add('hidden');
+                btnGerar.disabled = false;
+                btnGerar.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // Log inicial
+        console.log('Sistema de Geração de Matrículas Carregado');
+        console.log('Clique no botão para iniciar a geração');
+    </script>
+</body>
+</html>
